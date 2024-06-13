@@ -1,0 +1,62 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/12/2024 18:11:48 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "GPIO.h"
+   3          #include "Delay.h"
+   4          
+   5          void gpioConfig()
+   6          {
+   7   1              // 配置IO模式为推挽模式
+   8   1              GPIO_InitTypeDef gpio_config;
+   9   1              gpio_config.Mode = GPIO_OUT_PP; // 推挽模式
+  10   1              gpio_config.Pin = GPIO_P5;//引脚5
+  11   1              GPIO_Inilize(GPIO_Pin_3, &gpio_config);
+  12   1      }
+  13          
+  14          int main(void)
+  15          {
+  16   1              /* 使用宏函数
+  17   1              //配置IO模式为准双向模式，具体的宏去头文件中找就好，P5:端口 GPIO_Pin_3:是引�
+             -�
+  18   1              P5_MODE_IO_PU(GPIO_Pin_3);
+  19   1              */
+  20   1      
+  21   1              /*使用初始化函数*/
+  22   1              gpioConfig();
+  23   1      
+  24   1              while (1)
+  25   1              {
+  26   2                      P53 = 1; // 点灯
+  27   2                      delay_ms(250);
+  28   2                      delay_ms(250);
+  29   2                      delay_ms(250);
+  30   2                      delay_ms(250);
+  31   2                      P53 = 0; // 关灯
+  32   2                      delay_ms(250);
+  33   2                      delay_ms(250);
+  34   2                      delay_ms(250);
+  35   2                      delay_ms(250);
+  36   2              }
+  37   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     66    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

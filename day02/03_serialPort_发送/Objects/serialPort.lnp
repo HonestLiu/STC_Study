@@ -1,0 +1,7 @@
+".\Objects\main.obj",
+".\Objects\Delay.obj",
+".\Objects\GPIO.obj",
+".\Objects\NVIC.obj",
+".\Objects\UART.obj" 
+TO ".\Objects\serialPort" 
+PRINT(".\Listings\serialPort.m51") RAMSIZE(256) 

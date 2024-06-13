@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "config.h": "c",
+        "gpio.h": "c",
+        "nvic.h": "c"
+    }
+}

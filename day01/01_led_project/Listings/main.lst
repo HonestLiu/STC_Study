@@ -1,0 +1,35 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/12/2024 15:48:14 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "STC8H.H"//导入头文件
+   2          
+   3          int main() {
+   4   1              
+   5   1              //设置P5端口的3号引脚为双向输出，置0，用`&= ~`运算即可
+   6   1          P5M0 &= ~0x80;
+   7   1          P5M1 &= ~0x80;
+   8   1              
+   9   1          P53 = 1;//设置P53引脚为高电平，此时该引脚上的LED亮起
+  10   1          while(1) {}//卡住，避免程序结束用的
+  11   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     10    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
