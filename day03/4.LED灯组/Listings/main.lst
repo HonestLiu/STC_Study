@@ -1,0 +1,84 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/23/2024 09:06:28 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "GPIO.h"
+   3          
+   4          #define LED_SW  P45
+   5          #define LED1            P27
+   6          #define LED2            P26
+   7          #define LED3            P15
+   8          #define LED4            P14
+   9          #define LED5            P23
+  10          #define LED6            P22
+  11          #define LED7            P21
+  12          #define LED8            P20
+  13          
+  14          
+  15          /* 初始化GPIO */
+  16          void gpio_config()
+  17          {
+  18   1          GPIO_InitTypeDef gpio_config_struct = {0};
+  19   1          // 初始化SW引脚-> 电源总开关
+  20   1          gpio_config_struct.Mode = GPIO_OUT_PP; // 需要高电平控制三极管，故使用推挽输出
+  21   1          gpio_config_struct.Pin = GPIO_Pin_5;
+  22   1          GPIO_Inilize(GPIO_P4, &gpio_config_struct);
+  23   1      
+  24   1          // 初始化LED
+  25   1          gpio_config_struct.Mode = GPIO_PullUp;
+  26   1          gpio_config_struct.Pin = GPIO_Pin_4 | GPIO_Pin_5;
+  27   1          GPIO_Inilize(GPIO_P1, &gpio_config_struct);
+  28   1      
+  29   1          gpio_config_struct.Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_6 | GPIO_Pin_7;
+  30   1          GPIO_Inilize(GPIO_P2, &gpio_config_struct);
+  31   1      }
+  32          
+  33          
+  34          int main()
+  35          {
+  36   1      
+  37   1              gpio_config();
+  38   1              
+  39   1          /**
+  40   1           * @note Sw:LED灯组总开关，连接一个PNP三极管，作无接触开关，输出高电平时闭
+             -合，输出低电平时导通
+  41   1           **/
+  42   1          LED_SW = 0; // 打开总开关
+  43   1      
+  44   1          /**
+  45   1           * @note LED接口，端口另一侧为SW控制的VCC，端口处输出低电平即可点亮LED
+  46   1           */
+  47   1              LED1 = 0;
+  48   1              LED2 = 0;
+  49   1              LED3 = 0;
+  50   1              LED4 = 1;
+  51   1              LED5 = 0;
+  52   1              LED6 = 0;
+  53   1              LED7 = 0;
+C51 COMPILER V9.60.7.0   MAIN                                                              06/23/2024 09:06:28 PAGE 2   
+
+  54   1              LED8 = 0;
+  55   1              
+  56   1              while(1);
+  57   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     89    ----
+   CONSTANT SIZE    =      2    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

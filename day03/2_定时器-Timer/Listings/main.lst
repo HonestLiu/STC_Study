@@ -1,0 +1,70 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/14/2024 18:45:53 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          /**
+   2           * @author HonestLiu
+   3           * @note 通过定时器每1ms调整一次LED灯的亮灭
+   4           **/
+   5          #include "Config.h"
+   6          #include "GPIO.h"
+   7          #include "Timer.h"
+   8          #include "NVIC.h"
+   9          
+  10          /* LED引脚初始化函数->P53 */
+  11          void gpio_config()
+  12          {
+  13   1              GPIO_InitTypeDef gpio_struct;
+  14   1              gpio_struct.Pin = GPIO_Pin_3;
+  15   1              gpio_struct.Mode = GPIO_OUT_PP; // 推挽输出
+  16   1              GPIO_Inilize(GPIO_P5, &gpio_struct);
+  17   1      }
+  18          
+  19          /* 定时器初始化函数-Timer0 */
+  20          void timer_init()
+  21          {
+  22   1              TIM_InitTypeDef tim_struct;
+  23   1              tim_struct.TIM_Mode = TIM_16BitAutoReload;                         // 16位自动重装载模式
+  24   1              tim_struct.TIM_ClkSource = TIM_CLOCK_1T;                           // 时钟源为1T
+  25   1              tim_struct.TIM_ClkOut = DISABLE;                                           // 不输出高数脉冲
+  26   1              tim_struct.TIM_Value = 65536UL - (MAIN_Fosc / 1000UL); // 初值
+  27   1              tim_struct.TIM_Run = ENABLE;                                               // 运行定时器
+  28   1              Timer_Inilize(Timer0, &tim_struct);
+  29   1      
+  30   1              NVIC_Timer0_Init(ENABLE, Priority_0); // 中断使能, ENABLE/DISABLE; 优先级(低到高) Priority_0,Pr
+             -iority_1,Priority_2,Priority_3
+  31   1      }
+  32          
+  33          int main()
+  34          {
+  35   1              gpio_config();
+  36   1              timer_init();
+  37   1              P53 = 1;//先点亮P53LED
+  38   1      
+  39   1              while (1)
+  40   1              {
+  41   2      
+  42   2              }
+  43   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     60    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       9
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+C51 COMPILER V9.60.7.0   MAIN                                                              06/14/2024 18:45:53 PAGE 2   
+
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

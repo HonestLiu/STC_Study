@@ -1,0 +1,30 @@
+Build target 'Target 1'
+compiling main.c...
+linking...
+
+BL51 BANKED LINKER/LOCATER V6.22.4.0 - SN: Eval Version
+COPYRIGHT (C) 1987-2021, Arm Limited or its Affiliates. All rights reserved.
+".\Objects\Delay.obj",
+".\Objects\GPIO.obj",
+".\Objects\main.obj",
+".\Objects\NVIC.obj",
+".\Objects\UART.obj",
+".\Objects\UART_Isr.obj",
+".\Objects\Timer.obj" 
+TO ".\Objects\project" 
+PRINT(".\Listings\project.m51") RAMSIZE(256) 
+DISABLEWARNING (16) 
+
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0D0DH BYTE (163%) *
+******************************************************************************
+
+Program Size: data=36.0 xdata=320 code=3826
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)
+
+*** FATAL ERROR L250: CODE SIZE LIMIT IN RESTRICTED VERSION EXCEEDED
+    MODULE:  D:\APPDATA\KEIL_V5\C51\LIB\C51S.LIB (-----)
+    LIMIT:   0800H BYTES
+Target not created.
+Build Time Elapsed:  00:00:00

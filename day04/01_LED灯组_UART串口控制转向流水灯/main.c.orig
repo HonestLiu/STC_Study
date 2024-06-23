@@ -1,0 +1,22 @@
+#include "Config.h"
+#include "GPIO.h"
+#include "Delay.h"
+#include "Timer.h"
+
+/*初始化GPIO*/
+
+/*初始化定时器*/
+
+
+/*串口数据回调函数*/
+
+
+int main(void)
+{
+	
+	
+	while(1)
+	{
+		
+	}
+}

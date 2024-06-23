@@ -1,0 +1,182 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/23/2024 22:28:53 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\main
+                    -.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "GPIO.h"
+   3          #include "Delay.h"
+   4          #include "Timer.h"
+   5          #include "UART.h"
+   6          #include "Switch.h"
+   7          #include "NVIC.h"
+   8          #include "STC8H_PWM.h"
+   9          
+  10          #define LED_SW P45
+  11          
+  12          #define LED4 P14
+  13          #define LED3 P15
+  14          #define LED8 P20
+  15          #define LED7 P21
+  16          #define LED6 P22
+  17          #define LED5 P23
+  18          #define LED2 P26
+  19          #define LED1 P27
+  20          
+  21          #define HIGH 1
+  22          #define LOW 0
+  23          
+  24          /*初始化GPIO*/
+  25          void gpio_init(void)
+  26          {
+  27   1        /* UART端口 */
+  28   1        GPIO_InitTypeDef gpio_config;
+  29   1        gpio_config.Pin = GPIO_Pin_0 | GPIO_Pin_1;
+  30   1        gpio_config.Mode = GPIO_PullUp;
+  31   1        GPIO_Inilize(GPIO_P3, &gpio_config);
+  32   1        
+  33   1        /* LED端口 */
+  34   1        gpio_config.Pin = GPIO_Pin_4 | GPIO_Pin_5;
+  35   1        GPIO_Inilize(GPIO_P1, &gpio_config);
+  36   1      
+  37   1        gpio_config.Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_6 | GPIO_Pin_7;
+  38   1        GPIO_Inilize(GPIO_P2, &gpio_config);
+  39   1      
+  40   1        /* 初始化总开关-SW */
+  41   1        gpio_config.Pin = GPIO_Pin_5;
+  42   1        gpio_config.Mode = GPIO_OUT_PP;//推挽输出模式
+  43   1        GPIO_Inilize(GPIO_P4, &gpio_config);
+  44   1      }
+  45          
+  46          /*初始化PWM*/
+  47          #define PERIOD (MAIN_Fosc / 1000)
+  48          PWMx_Duty dutyA;
+  49          void PWM_config(void)
+  50          {
+  51   1        PWMx_InitDefine PWMx_InitStructure;
+  52   1      
+  53   1        // 配置PWM1
+  54   1        PWMx_InitStructure.PWM_Mode = CCMRn_PWM_MODE1;    // 模式,    CCMRn_FREEZE,CCMRn_MATCH_VALID,CCMRn_MATCH_INV
+C51 COMPILER V9.60.7.0   MAIN                                                              06/23/2024 22:28:53 PAGE 2   
+
+             -ALID,CCMRn_ROLLOVER,CCMRn_FORCE_INVALID,CCMRn_FORCE_VALID,CCMRn_PWM_MODE1,CCMRn_PWM_MODE2
+  55   1        PWMx_InitStructure.PWM_Duty = dutyA.PWM1_Duty;    // PWM占空比时间, 0~Period
+  56   1        PWMx_InitStructure.PWM_EnoSelect = ENO1P | ENO1N; // 输出通道选择,  ENO1P,ENO1N,ENO2P,ENO2N,ENO3P,ENO3N,EN
+             -O4P,ENO4N / ENO5P,ENO6P,ENO7P,ENO8P
+  57   1        PWM_Configuration(PWM1, &PWMx_InitStructure);   // 初始化PWM
+  58   1        // 配置PWM2
+  59   1        PWMx_InitStructure.PWM_Mode = CCMRn_PWM_MODE1;    // 模式,    CCMRn_FREEZE,CCMRn_MATCH_VALID,CCMRn_MATCH_INV
+             -ALID,CCMRn_ROLLOVER,CCMRn_FORCE_INVALID,CCMRn_FORCE_VALID,CCMRn_PWM_MODE1,CCMRn_PWM_MODE2
+  60   1        PWMx_InitStructure.PWM_Duty = dutyA.PWM2_Duty;    // PWM占空比时间, 0~Period
+  61   1        PWMx_InitStructure.PWM_EnoSelect = ENO2P | ENO2N; // 输出通道选择,  ENO1P,ENO1N,ENO2P,ENO2N,ENO3P,ENO3N,EN
+             -O4P,ENO4N / ENO5P,ENO6P,ENO7P,ENO8P
+  62   1        PWM_Configuration(PWM2, &PWMx_InitStructure);   // 初始化PWM
+  63   1        // 配置PWM3
+  64   1        PWMx_InitStructure.PWM_Mode = CCMRn_PWM_MODE1;    // 模式,    CCMRn_FREEZE,CCMRn_MATCH_VALID,CCMRn_MATCH_INV
+             -ALID,CCMRn_ROLLOVER,CCMRn_FORCE_INVALID,CCMRn_FORCE_VALID,CCMRn_PWM_MODE1,CCMRn_PWM_MODE2
+  65   1        PWMx_InitStructure.PWM_Duty = dutyA.PWM3_Duty;    // PWM占空比时间, 0~Period
+  66   1        PWMx_InitStructure.PWM_EnoSelect = ENO3P | ENO3N; // 输出通道选择,  ENO1P,ENO1N,ENO2P,ENO2N,ENO3P,ENO3N,EN
+             -O4P,ENO4N / ENO5P,ENO6P,ENO7P,ENO8P
+  67   1        PWM_Configuration(PWM3, &PWMx_InitStructure);
+  68   1        // 配置PWM4
+  69   1        PWMx_InitStructure.PWM_Mode = CCMRn_PWM_MODE1;    // 模式,    CCMRn_FREEZE,CCMRn_MATCH_VALID,CCMRn_MATCH_INV
+             -ALID,CCMRn_ROLLOVER,CCMRn_FORCE_INVALID,CCMRn_FORCE_VALID,CCMRn_PWM_MODE1,CCMRn_PWM_MODE2
+  70   1        PWMx_InitStructure.PWM_Duty = dutyA.PWM4_Duty;    // PWM占空比时间, 0~Period
+  71   1        PWMx_InitStructure.PWM_EnoSelect = ENO4P | ENO4N; // 输出通道选择,  ENO1P,ENO1N,ENO2P,ENO2N,ENO3P,ENO3N,EN
+             -O4P,ENO4N / ENO5P,ENO6P,ENO7P,ENO8P
+  72   1        PWM_Configuration(PWM4, &PWMx_InitStructure);
+  73   1      
+  74   1        // 配置PWMA
+  75   1        PWMx_InitStructure.PWM_Period = PERIOD - 1;    // 周期时间,   0~65535
+  76   1        PWMx_InitStructure.PWM_DeadTime = 0;       // 死区发生器设置, 0~255
+  77   1        PWMx_InitStructure.PWM_MainOutEnable = ENABLE; // 主输出使能, ENABLE,DISABLE
+  78   1        PWMx_InitStructure.PWM_CEN_Enable = ENABLE;    // 使能计数器, ENABLE,DISABLE
+  79   1        PWM_Configuration(PWMA, &PWMx_InitStructure);  // 初始化PWM通用寄存器,  PWMA,PWMB
+  80   1      
+  81   1        // 切换PWM通道
+  82   1        PWM1_SW(PWM1_SW_P20_P21); // PWM1_SW_P10_P11,PWM1_SW_P20_P21,PWM1_SW_P60_P61
+  83   1        PWM2_SW(PWM2_SW_P22_P23); // PWM2_SW_P12_P13,PWM2_SW_P22_P23,PWM2_SW_P62_P63
+  84   1        PWM3_SW(PWM3_SW_P14_P15); // PWM3_SW_P14_P15,PWM3_SW_P24_P25,PWM3_SW_P64_P65
+  85   1        PWM4_SW(PWM4_SW_P26_P27); // PWM4_SW_P16_P17,PWM4_SW_P26_P27,PWM4_SW_P66_P67,PWM4_SW_P34_P33
+  86   1      
+  87   1        // 初始化PWMA的中断
+  88   1        NVIC_PWM_Init(PWMA, DISABLE, Priority_0);
+  89   1      }
+  90          
+  91          
+  92          int main()
+  93          {
+  94   1          char duty_percent = 0; // 0 -> 100，标识占空比占整个周期多长时间
+  95   1          char direction = 1;//占空比每次循环相加的值
+  96   1          u32 duty_value = 0;
+  97   1          EAXSFR();   /* 扩展寄存器访问使能 */
+  98   1        
+  99   1          gpio_init();
+ 100   1          PWM_config();
+ 101   1      
+ 102   1          // 开启全局中断
+ 103   1          EA = 1;
+ 104   1          // 开启LED总开关
+ 105   1          LED_SW = 0;
+ 106   1      
+ 107   1          // 点亮LED1,2,3
+ 108   1          LED1 = LED2 = LED3 = 0;
+C51 COMPILER V9.60.7.0   MAIN                                                              06/23/2024 22:28:53 PAGE 3   
+
+ 109   1        
+ 110   1          //设置PWM值
+ 111   1          duty_value = PERIOD * duty_percent / 100;
+ 112   1          dutyA.PWM1_Duty = duty_value;
+ 113   1          dutyA.PWM2_Duty = duty_value;
+ 114   1          dutyA.PWM3_Duty = duty_value;
+ 115   1          dutyA.PWM4_Duty = duty_value; //设置占空比: 周期时间 * 占空比
+ 116   1          UpdatePwm(PWMA,&dutyA);//更新占空比
+ 117   1        
+ 118   1          while (1)
+ 119   1          {
+ 120   2            delay_ms(50); // 延时10ms
+ 121   2            
+ 122   2            duty_percent += direction;//修改占空比，每次加、减1
+ 123   2            
+ 124   2            //占空大于等于100，对其重新设置
+ 125   2            if(duty_percent >= 100)
+ 126   2            {
+ 127   3              duty_percent = 100;
+ 128   3              direction = -1;//设置成-1,令其每次循环都递减
+ 129   3            }
+ 130   2            else if(duty_percent <= 0)//占空比小于等于0，对其重新设置
+ 131   2            {
+ 132   3              duty_percent = 0;
+ 133   3              direction = 1;//设置成1，令其每次循环都递增
+ 134   3            }
+ 135   2            
+ 136   2            //更新设置后的占空比
+ 137   2            duty_value = PERIOD * duty_percent / 100;
+ 138   2            dutyA.PWM1_Duty = duty_value;
+ 139   2            dutyA.PWM2_Duty = duty_value;
+ 140   2            dutyA.PWM3_Duty = duty_value;
+ 141   2            dutyA.PWM4_Duty = duty_value; //设置占空比: 周期时间 * 占空比
+ 142   2            UpdatePwm(PWMA,&dutyA);//更新占空比
+ 143   2            
+ 144   2          }
+ 145   1            
+ 146   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    413    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     16      17
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

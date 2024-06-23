@@ -1,0 +1,47 @@
+Build target 'Target 1'
+compiling main.c...
+main.c(102): warning C276: constant in condition expression
+main.c(104): warning C276: constant in condition expression
+main.c(106): warning C276: constant in condition expression
+main.c(108): warning C276: constant in condition expression
+main.c(110): warning C276: constant in condition expression
+main.c(112): warning C276: constant in condition expression
+main.c(114): warning C276: constant in condition expression
+main.c(116): warning C276: constant in condition expression
+main.c(130): warning C276: constant in condition expression
+main.c(132): warning C276: constant in condition expression
+main.c(134): warning C276: constant in condition expression
+main.c(136): warning C276: constant in condition expression
+main.c(138): warning C276: constant in condition expression
+main.c(140): warning C276: constant in condition expression
+main.c(142): warning C276: constant in condition expression
+main.c(144): warning C276: constant in condition expression
+main.c(103): warning C294: unreachable code
+main.c(131): warning C294: unreachable code
+linking...
+
+BL51 BANKED LINKER/LOCATER V6.22.4.0 - SN: Eval Version
+COPYRIGHT (C) 1987-2021, Arm Limited or its Affiliates. All rights reserved.
+".\Objects\Delay.obj",
+".\Objects\GPIO.obj",
+".\Objects\main.obj",
+".\Objects\Timer.obj",
+".\Objects\UART.obj",
+".\Objects\NVIC.obj" 
+TO ".\Objects\project" 
+PRINT(".\Listings\project.m51") RAMSIZE(256) 
+DISABLEWARNING (16) 
+
+
+******************************************************************************
+* RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 0C3BH BYTE (152%) *
+******************************************************************************
+
+Program Size: data=31.0 xdata=256 code=3745
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)
+
+*** FATAL ERROR L250: CODE SIZE LIMIT IN RESTRICTED VERSION EXCEEDED
+    MODULE:  D:\APPDATA\KEIL_V5\C51\LIB\C51S.LIB (-----)
+    LIMIT:   0800H BYTES
+Target not created.
+Build Time Elapsed:  00:00:00

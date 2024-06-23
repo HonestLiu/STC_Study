@@ -6,7 +6,7 @@
 
 **使用板卡:** 大科电子工作室的核心板(淘宝随便找的便宜板子)
 
-<img src="README.assets/image-20240613161900760.png" style="zoom:50%;" />
+<img src="img/image-20240613161900760.png" style="zoom:50%;" />
 
 ## 代码说明
 
