@@ -1,0 +1,88 @@
+C51 COMPILER V9.60.7.0   NIXIE                                                             06/28/2024 11:04:27 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE NIXIE
+OBJECT MODULE PLACED IN .\Objects\NIXIE.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE NIXIE.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\List
+                    -ings\NIXIE.lst) TABS(2) OBJECT(.\Objects\NIXIE.obj)
+
+line level    source
+
+   1          #include "NIXIE.h"
+   2          
+   3          // 锁存操作-多行宏
+   4          #define RCK_ACTION()                                                           \
+   5            NIX_SCK = 0;                                                                 \
+   6            NOP2();                                                                      \
+   7            NIX_SCK = 1;                                                                 \
+   8            NOP2();
+   9          
+  10          void nixie_init() {
+  11   1        // 初始化IO
+  12   1        GPIO_CONFIG();
+  13   1      }
+  14          
+  15          static void nixie_out(u8 dat) {
+  16   1        char i;
+  17   1        for (i = 7; i >= 0; i--) { //(二进制位是从右往左写的)
+  18   2          // 获取预先定义的位数据，输出到芯片进行控制
+  19   2          NIX_DI = GET_BIT_VALUE(dat, i);
+  20   2          // 寄存器的移位操作
+  21   2          NIX_RCK = 0;
+  22   2          NOP2();
+  23   2          NIX_RCK = 1;
+  24   2          NOP2();
+  25   2        }
+  26   1      }
+  27          
+  28          void nixie_show(u8 letter, u8 digital) {
+  29   1      
+  30   1        // 1.先发送字母位(控制显示内容,至高位7是控制数码管右侧点的)
+  31   1        // 1 111 1000 --> 7
+  32   1        nixie_out(letter);
+  33   1      
+  34   1        // 2.再发送数字位(控制哪个位置点亮)
+  35   1        // 1111 1011 -> 7.7.空 7. 7.7.7.7 (二进制位是从右往左写的)
+  36   1        nixie_out(digital);
+  37   1      
+  38   1        // 3.锁存操作(制造上升沿)
+  39   1        RCK_ACTION();
+  40   1      }
+  41          
+  42          // Display函数通过查索引，显示指定的字符
+  43          // 索引对应表格参见：https://www.yuque.com/icheima/stc8h/kmz2mllvxs1uvdfy#lLhhp
+  44          u8 code LED_TABLE[] = {
+  45              // 0  1  2  -> 9  (索引012...9)
+  46              0xC0, 0xF9, 0xA4, 0xB0, 0x99, 0x92, 0x82, 0xF8, 0x80, 0x90,
+  47              // 0. 1. 2. -> 9. (索引10,11,12....19)
+  48              0x40, 0x79, 0x24, 0x30, 0x19, 0x12, 0x02, 0x78, 0x00, 0x10,
+  49              // . -            (索引20,21)
+  50              0x7F, 0xBF,
+  51              // AbCdEFHJLPqU   (索引22,23,24....33)
+  52              0x88, 0x83, 0xC6, 0xA1, 0x86, 0x8E, 0x89, 0xF1, 0xC7, 0x8C, 0x98, 0xC1};
+  53          
+  54          void nixie_display(u8 index, u8 dig) {
+C51 COMPILER V9.60.7.0   NIXIE                                                             06/28/2024 11:04:27 PAGE 2   
+
+  55   1        // 查表，获取用户传入字符所对应的显示二进制串
+  56   1        u8 letter = LED_TABLE[index];
+  57   1        // 根据传入要显示的位置，移位，将对应位置置1
+  58   1        u8 digital = (1 << dig);
+  59   1      
+  60   1        // 调用show函数显示字符
+  61   1        nixie_show(letter, digital);
+  62   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     98    ----
+   CONSTANT SIZE    =     34    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

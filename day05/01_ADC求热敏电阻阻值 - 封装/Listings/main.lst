@@ -1,0 +1,88 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/26/2024 11:51:46 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "Delay.h"
+   3          #include "GPIO.h"
+   4          #include "NVIC.h"
+   5          #include "Switch.h"
+   6          #include "UART.h"
+   7          #include "ntc.h"
+   8          
+   9          /**
+  10           * @note 需求: 测量P04端口连接的热敏电阻的阻值
+  11           */
+  12          
+  13          // 初始化UART的引脚
+  14          void Gpio_Config(void) { P3_MODE_IO_PU(GPIO_Pin_0 | GPIO_Pin_1); }
+  15          
+  16          /* 初始化Uart */
+  17          void UART_config(void) {
+  18   1        // >>> 记得添加 NVIC.c, UART.c, UART_Isr.c <<<
+  19   1        COMx_InitDefine COMx_InitStructure; // 结构定义
+  20   1      
+  21   1        COMx_InitStructure.UART_Mode =
+  22   1            UART_8bit_BRTx; // 模式,
+  23   1                            // UART_ShiftRight,UART_8bit_BRTx,UART_9bit,UART_9bit_BRTx
+  24   1      
+  25   1        COMx_InitStructure.UART_BRT_Use =
+  26   1            BRT_Timer1; // 选择波特率发生器, BRT_Timer1, BRT_Timer2 (注意:
+  27   1                        // 串口2固定使用BRT_Timer2)
+  28   1      
+  29   1        COMx_InitStructure.UART_BaudRate = 115200ul; // 波特率, 一般 110 ~ 115200
+  30   1        COMx_InitStructure.UART_RxEnable = ENABLE; // 接收允许,   ENABLE或DISABLE
+  31   1        COMx_InitStructure.BaudRateDouble = DISABLE; // 波特率加倍, ENABLE或DISABLE
+  32   1      
+  33   1        UART_Configuration(
+  34   1            UART1, &COMx_InitStructure); // 初始化串口1 UART1,UART2,UART3,UART4
+  35   1      
+  36   1        NVIC_UART1_Init(ENABLE,
+  37   1                        Priority_1); // 中断使能, ENABLE/DISABLE; 优先级(低到高)
+  38   1                                     // Priority_0,Priority_1,Priority_2,Priority_3
+  39   1        UART1_SW(
+  40   1            UART1_SW_P30_P31); // 引脚选择,
+  41   1                               // UART1_SW_P30_P31,UART1_SW_P36_P37,UART1_SW_P16_P17,UART1_SW_P43_P44
+  42   1      }
+  43          
+  44          int main(void) {
+  45   1      
+  46   1        Gpio_Config();
+  47   1        UART_config();
+  48   1        ntc_init();
+  49   1      
+  50   1        EA = 1; // 开启全局中断
+  51   1      
+  52   1        while (1) {
+  53   2      
+  54   2          // 打印温度
+C51 COMPILER V9.60.7.0   MAIN                                                              06/26/2024 11:51:46 PAGE 2   
+
+  55   2          printf("Temp: %dC", NTC_get_temperature());
+  56   2      
+  57   2          delay_ms(250);
+  58   2          delay_ms(250);
+  59   2          delay_ms(250);
+  60   2          delay_ms(250);
+  61   2        }
+  62   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    101    ----
+   CONSTANT SIZE    =     10    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       9
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

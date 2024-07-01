@@ -1,0 +1,121 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/25/2024 15:49:07 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "Delay.h"
+   3          #include "GPIO.h"
+   4          
+   5          #include "ADC.h"
+   6          #include "NVIC.h"
+   7          #include "Switch.h"
+   8          #include "UART.h"
+   9          
+  10          /**
+  11          使用ADC读取P05的采样值
+  12          */
+  13          
+  14          // 初始化GPIO
+  15          void gpio_config(void) {
+  16   1        // ADC
+  17   1        P0_MODE_IN_HIZ(GPIO_Pin_5); // 设置P05,高阻输入，用于ADC信号的采集
+  18   1      }
+  19          
+  20          /*初始化UART*/
+  21          void uart_config(void) {
+  22   1        // >>> 记得添加 NVIC.c, UART.c, UART_Isr.c <<<
+  23   1        COMx_InitDefine COMx_InitStructure; // 结构定义
+  24   1        COMx_InitStructure.UART_Mode =
+  25   1            UART_8bit_BRTx; // 模式,
+  26   1                            // UART_ShiftRight,UART_8bit_BRTx,UART_9bit,UART_9bit_BRTx
+  27   1        COMx_InitStructure.UART_BRT_Use =
+  28   1            BRT_Timer1; // 选择波特率发生器, BRT_Timer1, BRT_Timer2 (注意:
+  29   1                        // 串口2固定使用BRT_Timer2)
+  30   1        COMx_InitStructure.UART_BaudRate = 115200ul; // 波特率, 一般 110 ~ 115200
+  31   1        COMx_InitStructure.UART_RxEnable = ENABLE; // 接收允许,   ENABLE或DISABLE
+  32   1        COMx_InitStructure.BaudRateDouble = DISABLE; // 波特率加倍, ENABLE或DISABLE
+  33   1        UART_Configuration(
+  34   1            UART1, &COMx_InitStructure); // 初始化串口1 UART1,UART2,UART3,UART4
+  35   1      
+  36   1        NVIC_UART1_Init(ENABLE,
+  37   1                        Priority_1); // 中断使能, ENABLE/DISABLE; 优先级(低到高)
+  38   1                                     // Priority_0,Priority_1,Priority_2,Priority_3
+  39   1        UART1_SW(
+  40   1            UART1_SW_P30_P31); // 引脚选择,
+  41   1                               // UART1_SW_P30_P31,UART1_SW_P36_P37,UART1_SW_P16_P17,UART1_SW_P43_P44
+  42   1      }
+  43          
+  44          // 初始化ADC
+  45          void ADC_config(void) {
+  46   1        ADC_InitTypeDef ADC_InitStructure; // 结构定义
+  47   1      
+  48   1        ADC_InitStructure.ADC_SMPduty = 31; // ADC 模拟信号采样时间控制, 0~31（注意：
+  49   1                                            // SMPDUTY 一定不能设置小于 10）
+  50   1        ADC_InitStructure.ADC_CsSetup = 0; // ADC 通道选择时间控制 0(默认),1
+  51   1        ADC_InitStructure.ADC_CsHold = 1; // ADC 通道选择保持时间控制 0,1(默认),2,3
+  52   1        ADC_InitStructure.ADC_Speed =
+  53   1            ADC_SPEED_2X1T; // 设置 ADC 工作时钟频率  ADC_SPEED_2X1T~ADC_SPEED_2X16T
+  54   1        ADC_InitStructure.ADC_AdjResult =
+C51 COMPILER V9.60.7.0   MAIN                                                              06/25/2024 15:49:07 PAGE 2   
+
+  55   1            ADC_RIGHT_JUSTIFIED;         // ADC结果调整,
+  56   1                                         // ADC_LEFT_JUSTIFIED,ADC_RIGHT_JUSTIFIED
+  57   1        ADC_Inilize(&ADC_InitStructure); // 初始化
+  58   1        ADC_PowerControl(ENABLE);        // ADC电源开关, ENABLE或DISABLE
+  59   1        NVIC_ADC_Init(DISABLE,
+  60   1                      Priority_0); // 中断使能, ENABLE/DISABLE; 优先级(低到高)
+  61   1                                   // Priority_0,Priority_1,Priority_2,Priority_3
+  62   1      }
+  63          
+  64          int main() {
+  65   1        u16 adc_value;    // ADC的采用值最大为12位(0~4095)
+  66   1        u16 adc_value_15; // 采集ADC15通道的ADC信号
+  67   1        float VRef;       // 通过ADC转换结果反推的电压值
+  68   1        float VRef_15;    // 通过ADC转换结果反推的ADC15通道的电压值
+  69   1      
+  70   1        uart_config();
+  71   1        gpio_config();
+  72   1        ADC_config();
+  73   1      
+  74   1        EA = 1; // 使能全局中断
+  75   1      
+  76   1        while (1) {
+  77   2          // 读取ADC转换结果
+  78   2          adc_value = Get_ADCResult(
+  79   2              ADC_CH13); // 通道是根据实际使用的端口而定的，这里P05对应的是CH13
+  80   2          adc_value_15 = Get_ADCResult(ADC_CH15);
+  81   2      
+  82   2          // 通过公式反推出ADC输入电压(测量电压)
+  83   2          VRef = 3.3 * adc_value / 4096;
+  84   2          VRef_15 = 3.3 * adc_value / 4096;
+  85   2      
+  86   2          // 打印测量结果
+  87   2          printf("ADC:%d VRef:%f\n", adc_value, VRef);
+  88   2          printf("ADC_15:%d VRef_15:%f\n", adc_value_15, VRef_15);
+  89   2      
+  90   2          delay_ms(250);
+  91   2          delay_ms(250);
+  92   2          delay_ms(250);
+  93   2          delay_ms(250);
+  94   2        }
+  95   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    265    ----
+   CONSTANT SIZE    =     38    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      26
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

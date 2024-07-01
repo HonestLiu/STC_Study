@@ -91,7 +91,7 @@ void PWM_config(void)
 
 int main()
 {
-		char duty_percent = 0; // 0 -> 100，标识占空比占整个周期多长时间
+	  char duty_percent = 0; // 0 -> 100，标识占空比占整个周期多长时间
 	  char direction = 1;//占空比每次循环相加的值
 		u32 duty_value = 0;
 		EAXSFR();		/* 扩展寄存器访问使能 */

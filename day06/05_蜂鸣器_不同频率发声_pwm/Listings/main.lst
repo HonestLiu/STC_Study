@@ -1,0 +1,45 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/30/2024 19:29:12 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "Delay.h"
+   3          #include "Buzzer.h"
+   4          
+   5          
+   6          int main() {
+   7   1          u8 idx = 1;
+   8   1          Buzzer_init();
+   9   1          EA = 1;//开启全局中断
+  10   1          while (1) {
+  11   2              //传入音阶控制蜂鸣器响声
+  12   2              Buzzer_beep(idx);
+  13   2              if (++idx > 8) {
+  14   3                  idx = 1;
+  15   3              }
+  16   2              delay_ms(250);
+  17   2              delay_ms(250);
+  18   2              delay_ms(250);
+  19   2              delay_ms(250);
+  20   2          }
+  21   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     47    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

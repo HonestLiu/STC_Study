@@ -1,0 +1,36 @@
+#include "Config.h"
+#include "GPIO.h"
+#include "Delay.h"
+#include "NVIC.h"
+#include "Switch.h"
+#include "ADC.c"
+
+/**
+
+*/
+
+#define MOTOR P01
+
+//初始化P01引脚(连接三极管的引脚)
+void gpio_config(void)
+{
+    P0_MODE_OUT_PP(GPIO_Pin_1);//设置P01,推挽输出，保证有足够的电平导通三极管
+}
+
+
+int main()
+{
+    
+    gpio_config();
+
+    EA = 1;//使能全局中断
+	
+
+
+    while(1)
+    {
+     
+
+    }
+}
+

@@ -1,0 +1,350 @@
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                    06/28/2024  11:04:27  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22.4.0, INVOKED BY:
+D:\APPDATA\KEIL_V5\C51\BIN\BL51.EXE .\Objects\GPIO.obj, .\Objects\GPIO_Isr.obj, .\Objects\main.obj, .\Objects\NIXIE.obj,
+>>  .\Objects\Delay.obj TO .\Objects\project PRINT (.\Listings\project.m51) RAMSIZE (256) DISABLEWARNING (16)
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  .\Objects\GPIO.obj (GPIO)
+  .\Objects\GPIO_Isr.obj (GPIO_ISR)
+  .\Objects\main.obj (MAIN)
+  .\Objects\NIXIE.obj (NIXIE)
+  .\Objects\Delay.obj (DELAY)
+  D:\APPDATA\KEIL_V5\C51\LIB\C51S.LIB (?C_STARTUP)
+  D:\APPDATA\KEIL_V5\C51\LIB\C51S.LIB (?C?CLDPTR)
+  D:\APPDATA\KEIL_V5\C51\LIB\C51S.LIB (?C?CLDOPTR)
+  D:\APPDATA\KEIL_V5\C51\LIB\C51S.LIB (?C_INIT)
+
+
+LINK MAP OF MODULE:  .\Objects\project (GPIO)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0003H     UNIT         ?DT?MAIN
+            IDATA   000BH     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     0254H     UNIT         ?PR?_GPIO_INILIZE?GPIO
+            CODE    0257H     008CH     UNIT         ?C_C51STARTUP
+            CODE    02E3H     0046H     UNIT         ?C?LIB_CODE
+            CODE    0329H     0031H     UNIT         ?PR?_NIXIE_OUT?NIXIE
+            CODE    035AH     0022H     UNIT         ?CO?NIXIE
+            CODE    037CH     001FH     UNIT         ?PR?MAIN?MAIN
+            CODE    039BH     0017H     UNIT         ?PR?_NIXIE_DISPLAY?NIXIE
+            CODE    03B2H     0013H     UNIT         ?PR?_NIXIE_SHOW?NIXIE
+            CODE    03C5H     0010H     UNIT         ?PR?_DELAY_MS?DELAY
+            CODE    03D5H     0007H     UNIT         ?C_INITSEG
+            CODE    03DCH     0007H     UNIT         ?PR?NIXIE_INIT?NIXIE
+
+
+
+OVERLAY MAP OF MODULE:   .\Objects\project (GPIO)
+
+
+SEGMENT
+  +--> CALLED SEGMENT
+---------------------
+?C_C51STARTUP
+  +--> ?PR?MAIN?MAIN
+  +--> ?C_INITSEG
+
+?PR?MAIN?MAIN
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  06/28/2024  11:04:27  PAGE 2
+
+
+  +--> ?PR?NIXIE_INIT?NIXIE
+  +--> ?PR?_NIXIE_DISPLAY?NIXIE
+  +--> ?PR?_DELAY_MS?DELAY
+
+?PR?_NIXIE_DISPLAY?NIXIE
+  +--> ?CO?NIXIE
+  +--> ?PR?_NIXIE_SHOW?NIXIE
+
+?PR?_NIXIE_SHOW?NIXIE
+  +--> ?PR?_NIXIE_OUT?NIXIE
+
+
+
+SYMBOL TABLE OF MODULE:  .\Objects\project (GPIO)
+
+  VALUE           TYPE          NAME
+  ----------------------------------
+
+  -------         MODULE        GPIO
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0093H         PUBLIC        P0M1
+  D:0092H         PUBLIC        P1M0
+  D:0096H         PUBLIC        P2M0
+  D:0091H         PUBLIC        P1M1
+  D:0080H         PUBLIC        P0
+  D:00B2H         PUBLIC        P3M0
+  D:0095H         PUBLIC        P2M1
+  D:0090H         PUBLIC        P1
+  D:00B4H         PUBLIC        P4M0
+  D:00B1H         PUBLIC        P3M1
+  D:00A0H         PUBLIC        P2
+  D:00CAH         PUBLIC        P5M0
+  D:00B3H         PUBLIC        P4M1
+  D:00B0H         PUBLIC        P3
+  D:00CCH         PUBLIC        P6M0
+  D:00C9H         PUBLIC        P5M1
+  D:00C0H         PUBLIC        P4
+  D:00E2H         PUBLIC        P7M0
+  D:00CBH         PUBLIC        P6M1
+  D:00C8H         PUBLIC        P5
+  D:00E8H         PUBLIC        P6
+  D:00E1H         PUBLIC        P7M1
+  D:00F8H         PUBLIC        P7
+  D:00A8H         PUBLIC        IE
+  D:00B8H         PUBLIC        IP
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  C:0003H         PUBLIC        _GPIO_Inilize
+  D:00D0H         PUBLIC        PSW
+  D:0094H         PUBLIC        P0M0
+  -------         PROC          _GPIO_INILIZE
+  D:0007H         SYMBOL        GPIO
+  D:0001H         SYMBOL        GPIOx
+  C:0003H         LINE#         22
+  C:0003H         LINE#         23
+  C:0003H         LINE#         24
+  C:000CH         LINE#         25
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  06/28/2024  11:04:27  PAGE 3
+
+
+  C:0018H         LINE#         26
+  C:001BH         LINE#         27
+  C:001BH         LINE#         28
+  C:0029H         LINE#         29
+  C:003AH         LINE#         30
+  C:004BH         LINE#         31
+  C:005CH         LINE#         32
+  C:005CH         LINE#         33
+  C:0061H         LINE#         34
+  C:0061H         LINE#         35
+  C:0072H         LINE#         36
+  C:0081H         LINE#         37
+  C:0091H         LINE#         38
+  C:00A4H         LINE#         39
+  C:00A4H         LINE#         40
+  C:00A9H         LINE#         41
+  C:00A9H         LINE#         42
+  C:00BAH         LINE#         43
+  C:00C9H         LINE#         44
+  C:00D9H         LINE#         45
+  C:00ECH         LINE#         46
+  C:00ECH         LINE#         47
+  C:00F1H         LINE#         48
+  C:00F1H         LINE#         49
+  C:0102H         LINE#         50
+  C:0111H         LINE#         51
+  C:0121H         LINE#         52
+  C:0134H         LINE#         53
+  C:0134H         LINE#         54
+  C:0139H         LINE#         55
+  C:0139H         LINE#         56
+  C:014AH         LINE#         57
+  C:0159H         LINE#         58
+  C:0169H         LINE#         59
+  C:017CH         LINE#         60
+  C:017CH         LINE#         61
+  C:0181H         LINE#         62
+  C:0181H         LINE#         63
+  C:0192H         LINE#         64
+  C:01A1H         LINE#         65
+  C:01B1H         LINE#         66
+  C:01C4H         LINE#         67
+  C:01C4H         LINE#         68
+  C:01C9H         LINE#         69
+  C:01C9H         LINE#         70
+  C:01DAH         LINE#         71
+  C:01E9H         LINE#         72
+  C:01F9H         LINE#         73
+  C:020CH         LINE#         74
+  C:020CH         LINE#         75
+  C:0211H         LINE#         76
+  C:0211H         LINE#         77
+  C:0222H         LINE#         78
+  C:0231H         LINE#         79
+  C:0241H         LINE#         80
+  C:0254H         LINE#         81
+  C:0254H         LINE#         82
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  06/28/2024  11:04:27  PAGE 4
+
+
+  C:0256H         LINE#         83
+  -------         ENDPROC       _GPIO_INILIZE
+  -------         ENDMOD        GPIO
+
+  -------         MODULE        GPIO_ISR
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+  D:00B0H         PUBLIC        P3
+  D:00C0H         PUBLIC        P4
+  D:00C8H         PUBLIC        P5
+  D:00E8H         PUBLIC        P6
+  D:00F8H         PUBLIC        P7
+  D:00A8H         PUBLIC        IE
+  D:00B8H         PUBLIC        IP
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  D:00D0H         PUBLIC        PSW
+  -------         ENDMOD        GPIO_ISR
+
+  -------         MODULE        MAIN
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+  D:00B0H         PUBLIC        P3
+  D:00C0H         PUBLIC        P4
+  D:00C8H         PUBLIC        P5
+  D:00E8H         PUBLIC        P6
+  D:00F8H         PUBLIC        P7
+  D:00A8H         PUBLIC        IE
+  D:0008H         PUBLIC        letter
+  D:00B8H         PUBLIC        IP
+  C:037CH         PUBLIC        main
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  D:0009H         PUBLIC        digital
+  D:000AH         PUBLIC        i
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          MAIN
+  C:037CH         LINE#         13
+  C:037CH         LINE#         14
+  C:037FH         LINE#         15
+  C:037FH         LINE#         17
+  C:0382H         LINE#         19
+  C:038BH         LINE#         20
+  C:0390H         LINE#         21
+  -------         ENDPROC       MAIN
+  -------         ENDMOD        MAIN
+
+  -------         MODULE        NIXIE
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+  D:00B4H         PUBLIC        P4M0
+  D:00A0H         PUBLIC        P2
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  06/28/2024  11:04:27  PAGE 5
+
+
+  D:00B3H         PUBLIC        P4M1
+  D:00B0H         PUBLIC        P3
+  D:00C0H         PUBLIC        P4
+  D:00C8H         PUBLIC        P5
+  D:00E8H         PUBLIC        P6
+  D:00F8H         PUBLIC        P7
+  D:00A8H         PUBLIC        IE
+  D:00B8H         PUBLIC        IP
+  C:035AH         PUBLIC        LED_TABLE
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  B:00C0H.2       PUBLIC        P42
+  C:03DCH         PUBLIC        nixie_init
+  B:00C0H.3       PUBLIC        P43
+  B:00C0H.4       PUBLIC        P44
+  C:03B2H         PUBLIC        _nixie_show
+  C:0329H         SYMBOL        _nixie_out
+  D:00D0H         PUBLIC        PSW
+  C:039BH         PUBLIC        _nixie_display
+  -------         PROC          NIXIE_INIT
+  C:03DCH         LINE#         10
+  C:03DCH         LINE#         12
+  C:03E2H         LINE#         13
+  -------         ENDPROC       NIXIE_INIT
+  -------         PROC          _NIXIE_OUT
+  D:0005H         SYMBOL        dat
+  -------         DO            
+  D:0003H         SYMBOL        i
+  -------         ENDDO         
+  C:0329H         LINE#         15
+  C:032BH         LINE#         17
+  C:032DH         LINE#         19
+  C:0348H         LINE#         21
+  C:034AH         LINE#         22
+  C:034CH         LINE#         23
+  C:034EH         LINE#         24
+  C:0350H         LINE#         25
+  C:0359H         LINE#         26
+  -------         ENDPROC       _NIXIE_OUT
+  -------         PROC          _NIXIE_SHOW
+  D:0007H         SYMBOL        letter
+  D:0004H         SYMBOL        digital
+  C:03B2H         LINE#         28
+  C:03B4H         LINE#         32
+  C:03B7H         LINE#         36
+  C:03BCH         LINE#         39
+  C:03C4H         LINE#         40
+  -------         ENDPROC       _NIXIE_SHOW
+  -------         PROC          _NIXIE_DISPLAY
+  D:0007H         SYMBOL        index
+  D:0005H         SYMBOL        dig
+  -------         DO            
+  D:0007H         SYMBOL        letter
+  D:0005H         SYMBOL        digital
+  -------         ENDDO         
+  C:039BH         LINE#         54
+  C:039BH         LINE#         56
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  06/28/2024  11:04:27  PAGE 6
+
+
+  C:03A1H         LINE#         58
+  C:03AFH         LINE#         61
+  -------         ENDPROC       _NIXIE_DISPLAY
+  -------         ENDMOD        NIXIE
+
+  -------         MODULE        DELAY
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0080H         PUBLIC        P0
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+  D:00B0H         PUBLIC        P3
+  D:00C0H         PUBLIC        P4
+  D:00C8H         PUBLIC        P5
+  D:00E8H         PUBLIC        P6
+  D:00F8H         PUBLIC        P7
+  D:00A8H         PUBLIC        IE
+  D:00B8H         PUBLIC        IP
+  D:0098H         PUBLIC        SCON
+  D:0088H         PUBLIC        TCON
+  C:03C5H         PUBLIC        _delay_ms
+  D:00D0H         PUBLIC        PSW
+  -------         PROC          _DELAY_MS
+  D:0007H         SYMBOL        ms
+  -------         DO            
+  D:0004H         SYMBOL        i
+  -------         ENDDO         
+  C:03C5H         LINE#         24
+  C:03C5H         LINE#         25
+  C:03C5H         LINE#         27
+  C:03C5H         LINE#         28
+  C:03C9H         LINE#         29
+  C:03D2H         LINE#         30
+  C:03D4H         LINE#         31
+  -------         ENDPROC       _DELAY_MS
+  -------         ENDMOD        DELAY
+
+  -------         MODULE        ?C?CLDPTR
+  C:02E3H         PUBLIC        ?C?CLDPTR
+  -------         ENDMOD        ?C?CLDPTR
+
+  -------         MODULE        ?C?CLDOPTR
+  C:02FCH         PUBLIC        ?C?CLDOPTR
+  -------         ENDMOD        ?C?CLDOPTR
+
+Program Size: data=12.0 xdata=0 code=995
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

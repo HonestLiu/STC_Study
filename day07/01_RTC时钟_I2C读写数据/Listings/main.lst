@@ -1,0 +1,158 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/30/2024 10:06:27 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "GPIO.h"
+   3          #include "Delay.h"
+   4          #include "NVIC.h"
+   5          #include "UART.h"
+   6          #include "Switch.h"
+   7          #include "I2C.h"
+   8          
+   9          /****************  I2C GPIO初始化函数 *****************/
+  10          void GPIO_config() {
+  11   1          GPIO_InitTypeDef gpio_init_struct;
+  12   1          gpio_init_struct.Mode = GPIO_OUT_OD;//开漏输出
+  13   1          gpio_init_struct.Pin = GPIO_Pin_2 | GPIO_Pin_3;//I2C总线所使用的两个IO
+  14   1          GPIO_Inilize(GPIO_P3, &gpio_init_struct);
+  15   1      
+  16   1          P3_MODE_IO_PU(GPIO_Pin_0 | GPIO_Pin_1);
+  17   1      
+  18   1      }
+  19          
+  20          /****************  UART初始化函数 *****************/
+  21          void UART_config(void) {
+  22   1          // >>> 记得添加 NVIC.c, UART.c, UART_Isr.c <<<
+  23   1          COMx_InitDefine COMx_InitStructure;                    //结构定义
+  24   1          COMx_InitStructure.UART_Mode = UART_8bit_BRTx;    //模式, UART_ShiftRight,UART_8bit_BRTx,UART_9bit,U
+             -ART_9bit_BRTx
+  25   1          COMx_InitStructure.UART_BRT_Use = BRT_Timer1;            //选择波特率发生器, BRT_Timer1, BRT_T
+             -imer2 (注意: 串口2固定使用BRT_Timer2)
+  26   1          COMx_InitStructure.UART_BaudRate = 115200ul;            //波特率, 一般 110 ~ 115200
+  27   1          COMx_InitStructure.UART_RxEnable = ENABLE;                //接收允许,   ENABLE或DISABLE
+  28   1          COMx_InitStructure.BaudRateDouble = DISABLE;            //波特率加倍, ENABLE或DISABLE
+  29   1          UART_Configuration(UART1, &COMx_InitStructure);        //初始化串口1 UART1,UART2,UART3,UART4
+  30   1      
+  31   1          NVIC_UART1_Init(ENABLE,
+  32   1                          Priority_1);        //中断使能, ENABLE/DISABLE; 优先级(低到高) Priority_0,Pr
+             -iority_1,Priority_2,Priority_3
+  33   1          UART1_SW(UART1_SW_P30_P31);        // 引脚选择, UART1_SW_P30_P31,UART1_SW_P36_P37,UART1_SW_P16_P17
+             -,UART1_SW_P43_P44
+  34   1      }
+  35          
+  36          /****************  I2C初始化函数 *****************/
+  37          void I2C_config(void) {
+  38   1          I2C_InitTypeDef I2C_InitStructure;
+  39   1      
+  40   1          I2C_InitStructure.I2C_Mode = I2C_Mode_Master;    //主从选择   I2C_Mode_Master, I2C_Mode_Slave
+  41   1          I2C_InitStructure.I2C_Enable = ENABLE;            //I2C功能使能,   ENABLE, DISABLE
+  42   1          I2C_InitStructure.I2C_MS_WDTA = DISABLE;            //主机使能自动发送,  ENABLE, DISABLE
+  43   1          I2C_InitStructure.I2C_Speed = 13;                //总线速度=Fosc/2/(Speed*2+4),      0~63
+  44   1          I2C_Init(&I2C_InitStructure);
+  45   1          NVIC_I2C_Init(I2C_Mode_Master, DISABLE,
+  46   1                        Priority_0);    //主从模式, I2C_Mode_Master, I2C_Mode_Slave; 中断使能, ENABLE/DI
+             -SABLE; 优先级(低到高) Priority_0,Priority_1,Priority_2,Priority_3
+  47   1      
+  48   1          I2C_SW(I2C_P33_P32);                    //I2C_P14_P15,I2C_P24_P25,I2C_P33_P32
+  49   1      }
+C51 COMPILER V9.60.7.0   MAIN                                                              06/30/2024 10:06:27 PAGE 2   
+
+  50          
+  51          //要读的位数,其会自动进位，即读完秒，会自动移动到秒和时的地方去获取
+  52          #define NUMBER 7
+  53          // 十位取出左移4位 + 个位 (得到BCD数)
+  54          #define WRITE_BCD(val)    ((val / 10) << 4) + (val % 10)
+  55          
+  56          int main() {
+  57   1          // 设备地址 read:A3h write A2h(从PCF8563英文文档中获得)
+  58   1          u8 dev_addr = 0x51 << 1; //写地址,0x51是PCF8563的基地址，将它左移相当于让其右侧加
+             -个0，最后结果就是A2h
+  59   1          // 秒存储地址 0x02; //(从PCF8563英文文档中获得)
+  60   1          u8 mem_addr = 0x02;
+  61   1          //用于接收从机传来的数据
+  62   1          u8 p[NUMBER];
+  63   1      
+  64   1          //存储转换后的值
+  65   1          u8 second, minute, hour, day, week, month, C;
+  66   1          u16 year;
+  67   1      
+  68   1          EAXSFR();//使能拓展寄存器
+  69   1      
+  70   1          GPIO_config();
+  71   1          UART_config();
+  72   1          I2C_config();
+  73   1      
+  74   1          EA = 1;//使能中断
+  75   1      
+  76   1          /*1.设置RTC芯片时间*/
+  77   1      
+  78   1          //准备要写入的数据
+  79   1          year = 2024, month = 6, day = 29, week = 1, hour = 23, minute = 59, second = 54;
+  80   1          //将十进制数据转成BCD格式数据-> 和取数据倒着来即可
+  81   1          p[0] = ((second / 10) << 4) + (second % 10);
+  82   1          p[1] = WRITE_BCD(minute);
+  83   1          p[2] = WRITE_BCD(hour);
+  84   1          p[3] = week;
+  85   1          p[4] = WRITE_BCD(day);
+  86   1          C = year < 2100 ? 0 : 1;
+  87   1          p[5] = (C << 7) + WRITE_BCD(month);
+  88   1          p[6] = WRITE_BCD(year % 100);//年的范围是 0 ~99，只取十位即可
+  89   1      
+  90   1          //数据写入
+  91   1          I2C_WriteNbyte(dev_addr, mem_addr, &p, NUMBER);
+  92   1      
+  93   1          while (1) {
+  94   2              /*2.循环读取RTC芯片的数据*/
+  95   2              //通过I2C读取RTC时钟芯片的秒数据
+  96   2              I2C_ReadNbyte(dev_addr, mem_addr, &p, NUMBER);
+  97   2      
+  98   2              //解析得到的数据
+  99   2              second = ((p[0] >> 4) & 0x07) * 10 + (p[0] & 0x0F);//秒，高4位全取，低4位全取
+ 100   2              minute = ((p[1] >> 4) & 0x07) * 10 + (p[1] & 0x0F);//分，高4位全取，低4位全取
+ 101   2              hour = ((p[2] >> 4) & 0x03) * 10 + (p[2] & 0x0F);//时，高4位需要取两位，低4位全取
+ 102   2              day = ((p[3] >> 4) & 0x03) * 10 + (p[3] & 0x0F);//天，高4位需要取两位，低4位全取
+ 103   2              week = p[4] & 0x07;//周,只取低3位
+ 104   2              month = ((p[5] >> 4) & 0x01) * 10 + (p[5] & 0x0F);//月,高4位取1位，低4位全取
+ 105   2              C = p[5] >> 7;//世纪，只取最高位。 --> 0表示20xx年 1表示21xx年
+ 106   2              year = ((p[6] >> 4) & 0x0F) * 10 + (p[6] & 0x0F);//年，全都有;  --> 其范围是0~99
+ 107   2      
+ 108   2              /*根据BSD获取的年的范围是0~99，需要得到我们常见的"年"，需要将BSD得到的
+             -year与C所对应的值相加*/
+ 109   2              year += (C == 0 ? 2000 : 2100);
+C51 COMPILER V9.60.7.0   MAIN                                                              06/30/2024 10:06:27 PAGE 3   
+
+ 110   2      
+ 111   2              //printf("Hour:%d;Minute:%d;Second: %d\n", (int) hour, (int) minute, (int) second);
+ 112   2              printf("%d-%d-%d-%d-%d-%d,Week:%d\n", (int) year, (int) month, (int) day, (int) hour, (int) minute
+             -,
+ 113   2                     (int) second, (int) week);
+ 114   2      
+ 115   2              delay_ms(250);
+ 116   2              delay_ms(250);
+ 117   2              delay_ms(250);
+ 118   2              delay_ms(250);
+ 119   2          }
+ 120   1      
+ 121   1      
+ 122   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    604    ----
+   CONSTANT SIZE    =     27    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      35
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

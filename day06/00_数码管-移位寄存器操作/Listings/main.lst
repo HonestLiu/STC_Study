@@ -1,0 +1,89 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/27/2024 10:41:55 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "GPIO.h"
+   3          
+   4          // 数据信号
+   5          #define NIX_DI P44
+   6          // 移位信号
+   7          #define NIX_RCK P43
+   8          // 锁存信号
+   9          #define NIX_SCK P42
+  10          
+  11          void gpio_config() {
+  12   1        // 初始化数码管控制引脚
+  13   1        P4_MODE_OUT_PP(GPIO_P2 | GPIO_P3 | GPIO_P4);
+  14   1      }
+  15          
+  16          int main(void) {
+  17   1        char i;
+  18   1        gpio_config();
+  19   1      
+  20   1        // 1.先发送字母位(控制显示内容,至高位7是控制数码管右侧点的)
+  21   1        // 1 111 1000 --> 7
+  22   1        for (i = 7; i >= 0; i--) { //(二进制位是从右往左写的)
+  23   2          if (i == 7)              // 点亮数码管小数点
+  24   2          {
+  25   3            NIX_DI = 1;
+  26   3          } else if (i >= 3) {
+  27   3            NIX_DI = 1;
+  28   3          } else {
+  29   3            NIX_DI = 0;
+  30   3          }
+  31   2      
+  32   2          // 寄存器的移位操作
+  33   2          NIX_RCK = 0;
+  34   2          NOP2();
+  35   2          NIX_RCK = 1;
+  36   2          NOP2();
+  37   2        }
+  38   1      
+  39   1        // 2.再发送数字位(控制哪个位置点亮)
+  40   1        // 1111 1011 -> 7.7.空 7. 7.7.7.7 (二进制位是从右往左写的)
+  41   1        for (i = 7; i >= 0; i--) {
+  42   2          if (i != 2) {
+  43   3            NIX_DI = 1;
+  44   3          } else {
+  45   3            NIX_DI = 0;
+  46   3          }
+  47   2      
+  48   2          // 寄存器的移位操作
+  49   2          NIX_RCK = 0;
+  50   2          NOP2();
+  51   2          NIX_RCK = 1;
+  52   2          NOP2();
+  53   2        }
+  54   1      
+C51 COMPILER V9.60.7.0   MAIN                                                              06/27/2024 10:41:55 PAGE 2   
+
+  55   1        // 3.锁存操作(制造上升沿)
+  56   1        NIX_SCK = 0;
+  57   1        NOP2();
+  58   1        NIX_SCK = 1;
+  59   1        NOP2();
+  60   1      
+  61   1        while (1) {
+  62   2        }
+  63   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     90    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

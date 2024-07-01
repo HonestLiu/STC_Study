@@ -1,0 +1,100 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/24/2024 09:08:59 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "GPIO.h"
+   3          #include "Delay.h"
+   4          #include "NVIC.h"
+   5          #include "Switch.h"
+   6          #include "STC8H_PWM.h"
+   7          
+   8          /**
+   9          * 说明: 通过PWM驱动PNP三级管间接控制振动电机，通过调整占空比，改变振动马达的振动强度
+  10          * 1: 导通，电机振动  0:闭合，电机关闭
+  11          */
+  12          
+  13          #define MOTOR P01
+  14          
+  15          //初始化P01引脚(连接三极管的引脚)
+  16          void gpio_config(void)
+  17          {
+  18   1          P0_MODE_OUT_PP(GPIO_Pin_1);//设置P01,推挽输出，保证有足够的电平导通三极管
+  19   1      }
+  20          
+  21          //初始化PWM，P01引脚归属于PWMB分类的PWM6
+  22          #define PERIOD (MAIN_Fosc / 1000) //机器周期
+  23          PWMx_Duty dutyB;
+  24          void PWM_config(void)
+  25          {
+  26   1          PWMx_InitDefine             PWMx_InitStructure;
+  27   1      
+  28   1          // 配置PWM6
+  29   1          PWMx_InitStructure.PWM_Mode                 = CCMRn_PWM_MODE1;      //模式,         CCMRn_FREEZE,CCMRn_MATCH_VALID,CCMRn_MATC
+             -H_INVALID,CCMRn_ROLLOVER,CCMRn_FORCE_INVALID,CCMRn_FORCE_VALID,CCMRn_PWM_MODE1,CCMRn_PWM_MODE2
+  30   1          PWMx_InitStructure.PWM_Duty                 = dutyB.PWM6_Duty;      //PWM占空比时间, 0~Period
+  31   1          PWMx_InitStructure.PWM_EnoSelect    = ENO6P;                        //输出通道选择, ENO1P,ENO1N,ENO2P,ENO2N,ENO3P,ENO3N,ENO
+             -4P,ENO4N / ENO5P,ENO6P,ENO7P,ENO8P
+  32   1          PWM_Configuration(PWM6, &PWMx_InitStructure);                       //初始化PWM,  PWMA,PWMB
+  33   1      
+  34   1          // 配置PWMB
+  35   1          PWMx_InitStructure.PWM_Period   = PERIOD - 1;                       //周期时间,   0~65535
+  36   1          PWMx_InitStructure.PWM_DeadTime = 0;                                        //死区发生器设置, 0~255
+  37   1          PWMx_InitStructure.PWM_MainOutEnable= ENABLE;                       //主输出使能, ENABLE,DISABLE
+  38   1          PWMx_InitStructure.PWM_CEN_Enable   = ENABLE;                       //使能计数器, ENABLE,DISABLE
+  39   1          PWM_Configuration(PWMB, &PWMx_InitStructure);                       //初始化PWM通用寄存器,  PWMA,PWMB
+  40   1      
+  41   1          // 切换PWM通道
+  42   1          PWM6_SW(PWM6_SW_P01);                                       //PWM6_SW_P21,PWM6_SW_P54,PWM6_SW_P01,PWM6_SW_P75
+  43   1      
+  44   1          // 初始化PWMB的中断
+  45   1          NVIC_PWM_Init(PWMB,DISABLE,Priority_0);
+  46   1      }
+  47          
+  48          int main()
+  49          {
+  50   1          char duty_percent = 0; // 0 -> 100，标识占空比占整个周期多长时间
+  51   1      
+  52   1          EAXSFR();           /* 扩展寄存器访问使能 */
+C51 COMPILER V9.60.7.0   MAIN                                                              06/24/2024 09:08:59 PAGE 2   
+
+  53   1          PWM_config();
+  54   1          gpio_config();
+  55   1      
+  56   1          dutyB.PWM6_Duty = PERIOD * dutyB.PWM6_Duty / 100;
+  57   1          UpdatePwm(PWM6,&dutyB);
+  58   1      
+  59   1          while(1)
+  60   1          {
+  61   2              delay_ms(250);
+  62   2              duty_percent++;
+  63   2              if(duty_percent == 100)
+  64   2              {
+  65   3                  duty_percent = 0;
+  66   3              }
+  67   2              dutyB.PWM6_Duty = PERIOD * dutyB.PWM6_Duty / 100;
+  68   2              UpdatePwm(PWM6,&dutyB);
+  69   2      
+  70   2          }
+  71   1      }
+  72          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    181    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     16      10
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

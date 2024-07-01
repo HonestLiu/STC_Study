@@ -1,0 +1,1 @@
+"Exti_Isr.c" OPTIMIZE (8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\Exti_Isr.lst) TABS (2) OBJECT(.\Objects\Exti_Isr.obj)

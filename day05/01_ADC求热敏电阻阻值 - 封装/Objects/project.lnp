@@ -1,0 +1,13 @@
+".\Objects\main.obj",
+".\Objects\ADC.obj",
+".\Objects\ADC_Isr.obj",
+".\Objects\Delay.obj",
+".\Objects\GPIO.obj",
+".\Objects\GPIO_Isr.obj",
+".\Objects\NVIC.obj",
+".\Objects\UART.obj",
+".\Objects\UART_Isr.obj",
+".\Objects\ntc.obj" 
+TO ".\Objects\project" 
+PRINT(".\Listings\project.m51") RAMSIZE(256) 
+DISABLEWARNING (16) 

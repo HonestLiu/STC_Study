@@ -1,0 +1,66 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/30/2024 19:41:32 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "Delay.h"
+   3          #include "Buzzer.h"
+   4          
+   5          /*下面的数组根据实际的音谱进行编写即可*/
+   6          // 音符数组
+   7          u8 code notes[] = {
+   8            1, 2, 3, 1,         1, 2, 3, 1,         3, 4, 5,    3, 4, 5,
+   9            5, 6, 5, 4, 3, 1,   5, 6, 5, 4, 3, 1,   1, 5, 1,    1, 5, 1,
+  10          };
+  11          
+  12          // 延时时长
+  13          u8 code durations[] = {
+  14            4, 4, 4, 4,         4, 4, 4, 4,         4, 4, 8,    4, 4, 8,
+  15            3, 1, 3, 1, 4, 4,   3, 1, 3, 1, 4, 4,   4, 4, 8,    4, 4, 8
+  16          };
+  17          
+  18          int main() {
+  19   1          u8 i =0;
+  20   1          u8 len = 0;
+  21   1          u16 delay;
+  22   1      
+  23   1          Buzzer_init();
+  24   1          EA = 1;//开启全局中断
+  25   1          len = sizeof(notes) / sizeof(u8);
+  26   1          while (1) {
+  27   2              for (i = 0; i < len; ++i){
+  28   3                  //要播放的音符
+  29   3                  Buzzer_beep(notes[i]);
+  30   3                  //要播放的时长
+  31   3                  delay = durations[i] * 100;
+  32   3                  delay_X_ms(delay);
+  33   3      
+  34   3                  //稍微停止一下蜂鸣器
+  35   3                  Buzzer_stop();
+  36   3                  delay_ms(20);
+  37   3              }
+  38   2              Buzzer_stop();
+  39   2              
+  40   2              delay_X_ms(1000);
+  41   2          }
+  42   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     78    ----
+   CONSTANT SIZE    =     64    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

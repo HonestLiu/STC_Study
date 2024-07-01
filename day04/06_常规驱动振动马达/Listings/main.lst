@@ -1,0 +1,56 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/24/2024 08:33:13 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "GPIO.h"
+   3          #include "Delay.h"
+   4          
+   5          /**
+   6          * 说明: 用于驱动PNP三级管间接控制振动电机
+   7          * 1: 导通，电机振动  0:闭合，电机关闭
+   8          */
+   9          
+  10          #define MOTOR P01
+  11          
+  12          //初始化P01引脚(连接三极管的引脚)
+  13          void gpio_config(void)
+  14          {
+  15   1              P0_MODE_OUT_PP(GPIO_Pin_1);//设置P01,推挽输出，保证有足够的电平导通三极管
+  16   1      }
+  17          
+  18          int main()
+  19          {
+  20   1              gpio_config();
+  21   1              MOTOR = 1;//先导通三极管
+  22   1              while(1)
+  23   1              {
+  24   2                      delay_ms(250);
+  25   2                      delay_ms(250);
+  26   2                      MOTOR = 0;
+  27   2                      delay_ms(250);
+  28   2                      delay_ms(250);
+  29   2                      MOTOR = 1;
+  30   2              }
+  31   1      }
+  32          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     38    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

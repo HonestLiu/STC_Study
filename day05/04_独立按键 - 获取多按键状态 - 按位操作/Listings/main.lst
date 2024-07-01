@@ -1,0 +1,143 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              06/26/2024 19:03:27 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "GPIO.h"
+   3          #include "UART.h"
+   4          #include "NVIC.h"
+   5          #include "Switch.h"
+   6          #include <stdio.h>
+   7          
+   8          #define KEY0 P51
+   9          #define KEY1 P52
+  10          #define KEY2 P53
+  11          #define KEY3 P54
+  12          
+  13          #define LED P04
+  14          /* 按键状态宏 */
+  15          #define DOWN 0
+  16          #define UP 1
+  17          
+  18          u8 key_state = 0x0F;//记录KEY的最后一个状态的8个位
+  19          
+  20          /* 判断按键状态的宏函数 */
+  21          #define KEY_IS_DOWN(x) (key_state & (1 << x)) == 0
+  22          #define KEY_IS_UP(x) (key_state & (1 << x)) > 0
+  23          /* 设置按键状态的宏函数 */
+  24          #define KEY_SET_DOWN(x) (key_state &= ~(1 << x))
+  25          #define KEY_SET_UP(x) (key_state |= (1 << x))
+  26          
+  27          
+  28          void gpio_config(void) {
+  29   1        // 初始化独立按键的相关引脚
+  30   1        P5_MODE_IO_PU(GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5);//准双向
+  31   1        // 初始化测试用LED引脚
+  32   1        P0_MODE_OUT_PP(GPIO_Pin_4);//推挽输出
+  33   1      }
+  34          
+  35          void UART_config(void) {
+  36   1        // >>> 记得添加 NVIC.c, UART.c, UART_Isr.c <<<
+  37   1          COMx_InitDefine   COMx_InitStructure;         //结构定义
+  38   1          COMx_InitStructure.UART_Mode      = UART_8bit_BRTx; //模式, UART_ShiftRight,UART_8bit_BRTx,UART_9bit
+             -,UART_9bit_BRTx
+  39   1          COMx_InitStructure.UART_BRT_Use   = BRT_Timer1;     //选择波特率发生器, BRT_Timer1, BRT_Timer2 (
+             -注意: 串口2固定使用BRT_Timer2)
+  40   1          COMx_InitStructure.UART_BaudRate  = 115200ul;     //波特率, 一般 110 ~ 115200
+  41   1          COMx_InitStructure.UART_RxEnable  = ENABLE;       //接收允许,   ENABLE或DISABLE
+  42   1          COMx_InitStructure.BaudRateDouble = DISABLE;      //波特率加倍, ENABLE或DISABLE
+  43   1          UART_Configuration(UART1, &COMx_InitStructure);   //初始化串口1 UART1,UART2,UART3,UART4
+  44   1      
+  45   1          NVIC_UART1_Init(ENABLE,Priority_1);   //中断使能, ENABLE/DISABLE; 优先级(低到高) Priority_0,Pr
+             -iority_1,Priority_2,Priority_3
+  46   1          UART1_SW(UART1_SW_P30_P31);   // 引脚选择, UART1_SW_P30_P31,UART1_SW_P36_P37,UART1_SW_P16_P17,UART1
+             -_SW_P43_P44
+  47   1      }
+  48          
+  49          
+  50          int main() {
+C51 COMPILER V9.60.7.0   MAIN                                                              06/26/2024 19:03:27 PAGE 2   
+
+  51   1          gpio_config();
+  52   1          UART_config();
+  53   1          EA = 1;
+  54   1        
+  55   1      
+  56   1          while (1) {
+  57   2              /* 按键0 */
+  58   2      
+  59   2              //按键抬起,按键电平状态为 高 且上次标记状态为 按下
+  60   2              if (KEY0 && KEY_IS_DOWN(0) )
+  61   2              {   
+  62   3                  printf("key0 uplift\r\n");
+  63   3                  KEY_SET_UP(0);
+  64   3                  LED = !LED;//取反LED，改变它的状态
+  65   3              //按键按下，按键电平状态为 低 且上次标记状态为 抬起
+  66   3              }   else if (!KEY0 && KEY_IS_UP(0)) {
+  67   3                  printf("key0 down\r\n");
+  68   3                  KEY_SET_DOWN(0);
+  69   3              }
+  70   2      
+  71   2              /* 按键1 */
+  72   2              //按键抬起,按键电平状态为 高 且上次标记状态为 按下
+  73   2              if (KEY1 && KEY_IS_DOWN(1) )
+  74   2              {   
+  75   3                  printf("key1 uplift\r\n");
+  76   3                  KEY_SET_UP(1);
+  77   3                  LED = !LED;//取反LED，改变它的状态
+  78   3              //按键按下，按键电平状态为 低 且上次标记状态为 抬起
+  79   3              }   else if (!KEY1 && KEY_IS_UP(1)) {
+  80   3                  printf("key1 down\r\n");
+  81   3                  KEY_SET_DOWN(1);
+  82   3              }
+  83   2      
+  84   2              /* 按键2 */
+  85   2              //按键抬起,按键电平状态为 高 且上次标记状态为 按下
+  86   2              if (KEY2 && KEY_IS_DOWN(2) )
+  87   2              {   
+  88   3                  printf("key2 uplift\r\n");
+  89   3                  KEY_SET_UP(2);
+  90   3                  LED = !LED;//取反LED，改变它的状态
+  91   3              //按键按下，按键电平状态为 低 且上次标记状态为 抬起
+  92   3              }   else if (!KEY2 && KEY_IS_UP(2)) {
+  93   3                  printf("key2 down\r\n");
+  94   3                  KEY_SET_DOWN(2);
+  95   3              }
+  96   2      
+  97   2              /* 按键3 */
+  98   2               //按键抬起,按键电平状态为 高 且上次标记状态为 按下
+  99   2              if (KEY3 && KEY_IS_DOWN(3) )
+ 100   2              {   
+ 101   3                  printf("key3 uplift\r\n");
+ 102   3                  KEY_SET_UP(3);
+ 103   3                  LED = !LED;//取反LED，改变它的状态
+ 104   3              //按键按下，按键电平状态为 低 且上次标记状态为 抬起
+ 105   3              }   else if (!KEY3&& KEY_IS_UP(3)) {
+ 106   3                  printf("key3 down\r\n");
+ 107   3                  KEY_SET_DOWN(3);
+ 108   3              }
+ 109   2          }
+ 110   1      
+ 111   1      }
+
+C51 COMPILER V9.60.7.0   MAIN                                                              06/26/2024 19:03:27 PAGE 3   
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    268    ----
+   CONSTANT SIZE    =    104    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1       9
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
