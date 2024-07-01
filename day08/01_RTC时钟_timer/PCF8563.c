@@ -101,6 +101,20 @@ void PCF8563_enable_alarm() {
     I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x01, &Control_status_2, 1);
 }
 
+void PCF8563_disable_alarm() {
+    //存储状态控制寄存器2的值
+    u8 Control_status_2 = 0;
+
+    //先将状态控制寄存器2整个读出来
+    I2C_ReadNbyte(PCF8563_DEV_ADDR, 0x01, &Control_status_2, 1);
+    //清除AF闹钟标记，不清闹钟不会响
+    Control_status_2 &= ~0x08;
+    //将AIE位置0，失能闹钟
+    Control_status_2 &= ~0x02;
+    //将修改后的状态寄存器2的值写回
+    I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x01, &Control_status_2, 1);
+}
+
 
 void PCF8536_alarm_clear_flag() {
 //存储状态控制寄存器2的值
@@ -131,6 +145,15 @@ void PCF8563_enable_timer() {
     I2C_ReadNbyte(PCF8563_DEV_ADDR, 0x01, &CS2, 1);
     CS2 &= ~0x04;//将TF置0，清除标记位
     CS2 |= 0x01;//将TIE位置1，使能定时器
+    I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x01, &CS2, 1);
+}
+
+void PCF8563_disable_timer() {
+    u8 CS2 = 0;
+    //3.控制寄存器，清除定时器标记和使能定时器中断
+    I2C_ReadNbyte(PCF8563_DEV_ADDR, 0x01, &CS2, 1);
+    CS2 &= ~0x04;//将TF置0，清除标记位
+    CS2 &= ~0x01;//将TIE位置0，使能定时器
     I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x01, &CS2, 1);
 }
 

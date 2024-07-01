@@ -56,8 +56,11 @@ void PCF8563_get(Clock_t *c);
 //闹钟设置结构体
 void PCF8563_set_alarm(Alarm_t a);
 
-//启动闹钟
+//使能闹钟
 void PCF8563_enable_alarm();
+
+//失能闹钟
+void PCF8563_disable_alarm();
 
 //清除闹钟标记
 void PCF8536_alarm_clear_flag();
@@ -66,8 +69,11 @@ void PCF8536_alarm_clear_flag();
 //闹钟设置结构体
 void PCF8563_set_timer(Time_Freq freq, u8 countDown);
 
-//启动闹钟
+//使能闹钟
 void PCF8563_enable_timer();
+
+//失能闹钟
+void PCF8563_disable_timer();
 
 //清除闹钟标记
 void PCF8536_timer_clear_flag();

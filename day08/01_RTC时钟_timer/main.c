@@ -88,8 +88,11 @@ int main() {
     a.week_day = 2;
     PCF8563_set_alarm(a);
 
+    //TODO 如果只需要使用定时器/闹钟其一，务必使用失能函数对其进行失能，否则可能会因为芯片此前的设置而导致出错
+
     /*配置状态控制寄存器2启用闹钟/警报Alarm*/
     PCF8563_enable_alarm();
+    //PCF8563_disable_alarm();
 
     /*设置RTC Timer定时器*/
     //时钟源选择64Hz,倒计时值为64
