@@ -1,0 +1,9 @@
+".\obj\main.obj",
+".\obj\usb.obj",
+".\obj\usb_desc.obj",
+".\obj\usb_req_class.obj",
+".\obj\usb_req_std.obj",
+".\obj\usb_req_vendor.obj",
+".\obj\util.obj" 
+TO ".\obj\stc_usb_hid" 
+PRINT(".\obj\stc_usb_hid.m51") RAMSIZE(256) 

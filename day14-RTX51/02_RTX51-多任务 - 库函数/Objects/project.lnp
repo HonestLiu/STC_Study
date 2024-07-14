@@ -1,0 +1,6 @@
+".\Objects\Conf_tny.obj",
+".\OS\RTX51TNY.LIB",
+".\Objects\main.obj",
+".\Objects\GPIO.obj" 
+TO ".\Objects\project" Rtx51Tiny 
+PRINT(".\Listings\project.m51") RAMSIZE(256) 

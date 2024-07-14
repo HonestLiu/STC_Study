@@ -37,18 +37,18 @@ void PCF8563_init(void) {
 }
 
 
-void PCF8563_set(Clock_t *c) {
+void PCF8563_set(Clock_t c) {
     u8 p[NUMBER];
     u8 C = CENTURY;//世纪 0: 2000  1:2100
     //将十进制数据转成BCD格式数据-> 和取数据倒着来即可
-    p[0] = ((c->second / 10) << 4) + (c->second % 10);
-    p[1] = WRITE_BCD(c->minute);
-    p[2] = WRITE_BCD(c->hour);
-    p[3] = c->week;
-    p[4] = WRITE_BCD(c->day);
-    C = c->year < 2100 ? 0 : 1;
-    p[5] = (C << 7) + WRITE_BCD(c->month);
-    p[6] = WRITE_BCD(c->year % 100);//年的范围是 0 ~99，只取十位即可
+    p[0] = ((c.second / 10) << 4) + (c.second % 10);
+    p[1] = WRITE_BCD(c.minute);
+    p[2] = WRITE_BCD(c.hour);
+    p[3] = c.week;
+    p[4] = WRITE_BCD(c.day);
+    C = c.year < 2100 ? 0 : 1;
+    p[5] = (C << 7) + WRITE_BCD(c.month);
+    p[6] = WRITE_BCD(c.year % 100);//年的范围是 0 ~99，只取十位即可
 
     //数据写入
     I2C_WriteNbyte(PCF8563_DEV_ADDR, PCF8563_REG_TD, p, NUMBER);

@@ -1,0 +1,49 @@
+C51 COMPILER V9.60.7.0   KEY                                                               07/11/2024 10:59:56 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE KEY
+OBJECT MODULE PLACED IN .\Objects\Key.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE Drive\Key.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Lib) DEBUG OBJECTE
+                    -XTEND PRINT(.\Listings\Key.lst) TABS(2) OBJECT(.\Objects\Key.obj)
+
+line level    source
+
+   1          #include "Key.h"
+   2          
+   3          #define DOWN 1
+   4          #define UP 0
+   5          
+   6          u8 key_last_state = UP;
+   7          
+   8          void KEY_init(void) { KEY_IO_INIT(); }
+   9          
+  10          void KEY_scan(void) {
+  11   1          // 当按键状态不等于上一次按键状态时触发相关函数
+  12   1        if (KEY != key_last_state) {
+  13   2          // 更新按键状态
+  14   2          key_last_state = KEY;
+  15   2          // 根据按键状态触发相关函数
+  16   2          if (KEY == DOWN) {
+  17   3            KEY_down();
+  18   3          } else{
+  19   3            KEY_up();
+  20   3          }
+  21   2        }
+  22   1      }
+  23          
+  24          //void KEY_down();
+  25          //void KEY_up();
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     31    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

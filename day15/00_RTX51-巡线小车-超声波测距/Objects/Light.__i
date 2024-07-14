@@ -1,0 +1,1 @@
+"Drive\Light.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(.\Lib) DEBUG OBJECTEXTEND PRINT(.\Listings\Light.lst) TABS (2) OBJECT(.\Objects\Light.obj)

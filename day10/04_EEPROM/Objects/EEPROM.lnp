@@ -1,0 +1,11 @@
+".\Objects\Delay.obj",
+".\Objects\EEPROM.obj",
+".\Objects\GPIO.obj",
+".\Objects\GPIO_Isr.obj",
+".\Objects\main.obj",
+".\Objects\NVIC.obj",
+".\Objects\UART.obj",
+".\Objects\UART_Isr.obj" 
+TO ".\Objects\EEPROM" 
+PRINT(".\Listings\EEPROM.m51") RAMSIZE(256) 
+DISABLEWARNING (16) 

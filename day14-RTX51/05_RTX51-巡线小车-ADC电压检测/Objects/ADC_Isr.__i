@@ -1,0 +1,1 @@
+"Lib\ADC_Isr.c" OPTIMIZE (8,SPEED) BROWSE INCDIR(.\Lib) DEBUG OBJECTEXTEND PRINT(.\Listings\ADC_Isr.lst) TABS (2) OBJECT(.\Objects\ADC_Isr.obj)

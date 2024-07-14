@@ -1,0 +1,99 @@
+C51 COMPILER V9.60.7.0   ULTRASONIC_                                                       07/11/2024 10:14:55 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE ULTRASONIC_
+OBJECT MODULE PLACED IN .\Objects\Ultrasonic .obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE Drive\Ultrasonic .c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Lib) DEBUG
+                    - OBJECTEXTEND PRINT(.\Listings\Ultrasonic .lst) TABS(2) OBJECT(.\Objects\Ultrasonic .obj)
+
+line level    source
+
+   1          #include "Ultrasonic.h"
+   2          
+   3          void Delay10us(void) //@24.000MHz
+   4          {
+   5   1        unsigned char data i;
+   6   1      
+   7   1        i = 78;
+   8   1        while (--i)
+   9   1          ;
+  10   1      }
+  11          
+  12          static void GPIO_config(void) {
+  13   1      
+  14   1          // 初始化两个IO
+  15   1          // TRIG 推挽输出模式
+  16   1          GPIO_InitTypeDef  GPIO_InitStructure;   //结构定义
+  17   1          GPIO_InitStructure.Pin  = GPIO_Pin_3;   //指定要初始化的IO,
+  18   1          GPIO_InitStructure.Mode = GPIO_OUT_PP;  //指定IO的输入或输出方式,GPIO_PullUp,GPIO_HighZ,GPIO_
+             -OUT_OD,GPIO_OUT_PP
+  19   1          GPIO_Inilize(GPIO_P1, &GPIO_InitStructure);//初始化
+  20   1      
+  21   1          // ECHO 高阻输入
+  22   1          GPIO_InitStructure.Pin  = GPIO_Pin_0;   //指定要初始化的IO,
+  23   1          GPIO_InitStructure.Mode = GPIO_HighZ; //指定IO的输入或输出方式,GPIO_PullUp,GPIO_HighZ,GPIO_O
+             -UT_OD,GPIO_OUT_PP
+  24   1          GPIO_Inilize(GPIO_P4, &GPIO_InitStructure);//初始化
+  25   1      }
+  26          
+  27          void Ultrasonic_init() {
+  28   1        // 初始化超声波模块管脚
+  29   1        /*  ECHO_IO_INIT();
+  30   1         TRIG_IO_INIT(); */
+  31   1        GPIO_config();
+  32   1        // 设置TRIG管脚均为低电平，等待上升沿的发生
+  33   1        TRIG = 0;
+  34   1      }
+  35          
+  36          char Ultrasonic_get_distance(float *distance) {
+  37   1        u16 cnt_10us = 0;
+  38   1        float dis = 0;
+  39   1        // 1.拉高TRIG管脚10us以上,可发出 8 个 40KHZ的超声波脉冲(为规避误差持续20us)
+  40   1        TRIG = 1;
+  41   1        Delay10us();
+  42   1        Delay10us();
+  43   1        TRIG = 0;
+  44   1        // 2.等待400us，等ECHO被拉高，如果没有则返回-1
+  45   1        cnt_10us = 0;
+  46   1        while (cnt_10us < 40 && ECHO == 0) {
+  47   2          Delay10us();
+  48   2          cnt_10us++;
+  49   2        }
+  50   1        if (cnt_10us * 10 >= 400) {
+  51   2          // 超时退出，直接返回-1
+  52   2          return cnt_10us;
+C51 COMPILER V9.60.7.0   ULTRASONIC_                                                       07/11/2024 10:14:55 PAGE 2   
+
+  53   2        }
+  54   1        // 3.记录ECHO从上升沿到下降沿的时间
+  55   1        cnt_10us = 0;
+  56   1        while (ECHO == 1) {
+  57   2          Delay10us();
+  58   2          cnt_10us++;
+  59   2        }
+  60   1        // 4.根据公式将时间转换为距离 --> 距离值为：(高电平时间*34cm/ms)/2
+  61   1        dis = 34 * cnt_10us * 0.01 * 0.5; // cm/ms
+  62   1        *distance = dis;
+  63   1        if (dis < 2) {
+  64   2          // 距离过短
+  65   2          return 1;
+  66   2        } else if (dis > 600) {
+  67   2          // 距离过长
+  68   2          return 2;
+  69   2        }
+  70   1        return 0; // 数据正常
+  71   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    225    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       9
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

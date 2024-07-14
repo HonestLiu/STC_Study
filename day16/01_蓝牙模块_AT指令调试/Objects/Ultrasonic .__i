@@ -1,0 +1,1 @@
+"Drive\Ultrasonic .c" LARGE OPTIMIZE (8,SPEED) BROWSE INCDIR(.\Lib) DEBUG OBJECTEXTEND PRINT(.\Listings\Ultrasonic .lst) TABS (2) OBJECT(.\Objects\Ultrasonic .obj)

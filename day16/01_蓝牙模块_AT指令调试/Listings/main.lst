@@ -1,0 +1,152 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              07/12/2024 19:41:50 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE User\main.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Lib) DEBUG O
+                    -BJECTEXTEND PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          // 外部设备
+   2          #include "../Drive/Key.h"
+   3          #include "../Drive/Light.h"
+   4          
+   5          // 片上外设
+   6          #include "../Lib/Config.h"
+   7          #include "../Lib/GPIO.h"
+   8          #include "../Lib/NVIC.h"
+   9          #include "../Lib/Switch.h"
+  10          #include "../Lib/UART.h"
+  11          
+  12          #include "RTX51TNY.h" //RTX51的系统头文件
+  13          
+  14          static void GPIO_config() {
+  15   1        GPIO_InitTypeDef gpio_init_struct;
+  16   1        gpio_init_struct.Mode = GPIO_PullUp;
+  17   1        gpio_init_struct.Pin = GPIO_Pin_1 | GPIO_Pin_0;
+  18   1        GPIO_Inilize(GPIO_P1, &gpio_init_struct);
+  19   1      }
+  20          
+  21          void UART_config(void) {
+  22   1      
+  23   1        /* UART1初始化 —— PC to MCU */
+  24   1        COMx_InitDefine COMx_InitStructure;
+  25   1        COMx_InitStructure.UART_Mode = UART_8bit_BRTx;
+  26   1        COMx_InitStructure.UART_BRT_Use = BRT_Timer1;
+  27   1        COMx_InitStructure.UART_BaudRate = 115200ul;
+  28   1        COMx_InitStructure.UART_RxEnable = ENABLE;
+  29   1        COMx_InitStructure.BaudRateDouble = DISABLE;
+  30   1        UART_Configuration(UART1, &COMx_InitStructure);
+  31   1        NVIC_UART1_Init(ENABLE, Priority_1);
+  32   1        UART1_SW(UART1_SW_P30_P31);
+  33   1      
+  34   1        /* UART2初始化 —— MCU to BlueTooth */
+  35   1        COMx_InitStructure.UART_Mode = UART_8bit_BRTx;
+  36   1        COMx_InitStructure.UART_BRT_Use = BRT_Timer2;
+  37   1        COMx_InitStructure.UART_BaudRate = 9600ul; // 波特率, 蓝牙模块默认就是9600?
+  38   1        COMx_InitStructure.UART_RxEnable = ENABLE;
+  39   1        COMx_InitStructure.BaudRateDouble = DISABLE;
+  40   1        UART_Configuration(UART2, &COMx_InitStructure);
+  41   1        NVIC_UART2_Init(ENABLE, Priority_1);
+  42   1        UART2_SW(UART2_SW_P10_P11);
+  43   1      }
+  44          
+  45          void sys_init() {
+  46   1        EAXSFR();
+  47   1        // 片上外设初始化
+  48   1        UART_config(); // 初始化UART
+  49   1        GPIO_config();
+  50   1      
+  51   1        // 驱动初始化
+  52   1        Light_init(); // 初始化转向灯
+  53   1        KEY_init();   // 初始化按钮
+  54   1      
+C51 COMPILER V9.60.7.0   MAIN                                                              07/12/2024 19:41:50 PAGE 2   
+
+  55   1        EA = 1;
+  56   1      }
+  57          
+  58          #define UART1_TASK 2
+  59          #define UART2_TASK 3
+  60          
+  61          void start_main() _task_ 0 {
+  62   1        sys_init();
+  63   1        os_create_task(1); // 创建按键任务
+  64   1        os_create_task(UART1_TASK);
+  65   1        os_create_task(UART2_TASK);
+  66   1      
+  67   1        // 销毁自己
+  68   1        os_delete_task(0);
+  69   1      }
+  70          
+  71          u8 track_state = 0; // 巡线功能状态 0：未启用 1:已启用
+  72          void KEY_down() { Light_on(ALL); }
+  73          
+  74          void KEY_up() { Light_off(ALL); }
+  75          
+  76          void task_Key() _task_ 1 {
+  77   1      
+  78   1        while (1) {
+  79   2          KEY_scan();
+  80   2          os_wait2(K_TMO, 2);
+  81   2        }
+  82   1      }
+  83          
+  84          // 从PC端接收数据，并将数据发送给蓝牙模块
+  85          void task_uart1() _task_ UART1_TASK {
+  86   1        u8 i;
+  87   1        while (1) {
+  88   2          if (COM1.RX_TimeOut > 0) {
+  89   3            // 超时计数
+  90   3            if (--COM1.RX_TimeOut == 0) {
+  91   4              if (COM1.RX_Cnt > 0) {
+  92   5                // 这里处理收到的数据，做具体的逻辑，可以调用自己的on_uart1_recv
+  93   5                for (i = 0; i < COM1.RX_Cnt; i++) {
+  94   6                  // 写出数据到蓝牙
+  95   6                  TX2_write2buff(RX1_Buffer[i]);
+  96   6                  TX1_write2buff(RX1_Buffer[i]);
+  97   6                }
+  98   5              }
+  99   4              COM1.RX_Cnt = 0;
+ 100   4            }
+ 101   3          }
+ 102   2          os_wait2(K_TMO, 2);
+ 103   2        }
+ 104   1      }
+ 105          
+ 106          // 接收蓝牙模块发送回来的数据，并将数据发送给PC
+ 107          void task_uart2() _task_ UART2_TASK {
+ 108   1        u8 i;
+ 109   1        while (1) {
+ 110   2          if (COM2.RX_TimeOut > 0) {
+ 111   3            // 超时计数
+ 112   3            if (--COM2.RX_TimeOut == 0) {
+ 113   4              if (COM2.RX_Cnt > 0) {
+ 114   5                for (i = 0; i < COM2.RX_Cnt; i++) {
+ 115   6                  // 写出数据到PC
+ 116   6                  TX1_write2buff(RX2_Buffer[i]);
+C51 COMPILER V9.60.7.0   MAIN                                                              07/12/2024 19:41:50 PAGE 3   
+
+ 117   6                }
+ 118   5              }
+ 119   4              COM2.RX_Cnt = 0;
+ 120   4            }
+ 121   3          }
+ 122   2          os_wait2(K_TMO, 2);
+ 123   2        }
+ 124   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    356    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =      1      13
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

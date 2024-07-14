@@ -1,0 +1,91 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              07/03/2024 11:29:28 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "Delay.h"
+   3          #include "NVIC.h"
+   4          #include "Switch.h"
+   5          #include "UART.h"
+   6          #include "DHT11.h"
+   7          
+   8          /**
+   9           * @author HonestLiu
+  10           * @webSite honestliu.com
+  11           * @mail mail\@honestliu.com
+  12           * @description 获取DHT11的数据并解析-封装版，默认DHT11数据管脚为P46,可前往DHT11.h�
+             -�行修改
+  13           * */
+  14          
+  15          // 初始化UART
+  16          void UART_config(void) {
+  17   1          // >>> 记得添加 NVIC.c, UART.c, UART_Isr.c <<<
+  18   1          COMx_InitDefine COMx_InitStructure;                    //结构定义
+  19   1          COMx_InitStructure.UART_Mode = UART_8bit_BRTx;    //模式, UART_ShiftRight,UART_8bit_BRTx,UART_9bit,U
+             -ART_9bit_BRTx
+  20   1          COMx_InitStructure.UART_BRT_Use = BRT_Timer1;            //选择波特率发生器, BRT_Timer1, BRT_T
+             -imer2 (注意: 串口2固定使用BRT_Timer2)
+  21   1          COMx_InitStructure.UART_BaudRate = 115200ul;            //波特率, 一般 110 ~ 115200
+  22   1          COMx_InitStructure.UART_RxEnable = ENABLE;                //接收允许,   ENABLE或DISABLE
+  23   1          COMx_InitStructure.BaudRateDouble = DISABLE;            //波特率加倍, ENABLE或DISABLE
+  24   1          UART_Configuration(UART1, &COMx_InitStructure);        //初始化串口1 UART1,UART2,UART3,UART4
+  25   1      
+  26   1          NVIC_UART1_Init(ENABLE,
+  27   1                          Priority_1);        //中断使能, ENABLE/DISABLE; 优先级(低到高) Priority_0,Pr
+             -iority_1,Priority_2,Priority_3
+  28   1          UART1_SW(UART1_SW_P30_P31);        // 引脚选择, UART1_SW_P30_P31,UART1_SW_P36_P37,UART1_SW_P16_P17
+             -,UART1_SW_P43_P44
+  29   1      }
+  30          
+  31          
+  32          int main() {
+  33   1          float humidity = 0;
+  34   1          float temperature = 0;
+  35   1      
+  36   1          DHT11_init();//初始化DHT11
+  37   1          UART_config();
+  38   1      
+  39   1          EA = 1;//开启中断
+  40   1      
+  41   1          while (1) {
+  42   2              if (COM1.RX_TimeOut > 0) {
+  43   3                  //超时计数
+  44   3                  if (--COM1.RX_TimeOut == 0) {
+  45   4                      if (COM1.RX_Cnt > 0) {
+  46   5                          if ((DHT11_get_info(&humidity, &temperature)) == 0) {//获取DHT11的数据并判断�
+             -�否获取成功
+  47   6                              printf("Humidity:%.2f %% \n", humidity);
+  48   6                              printf("Temperature:%.2f C\n", temperature);
+C51 COMPILER V9.60.7.0   MAIN                                                              07/03/2024 11:29:28 PAGE 2   
+
+  49   6                          } else {
+  50   6                              printf("Data validation failure!!");//数据校验失败
+  51   6                          }
+  52   5                      }
+  53   4                      COM1.RX_Cnt = 0;
+  54   4                  }
+  55   3              }
+  56   2              // 不要处理的太快
+  57   2              delay_ms(10);
+  58   2          }
+  59   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    169    ----
+   CONSTANT SIZE    =     65    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      17
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

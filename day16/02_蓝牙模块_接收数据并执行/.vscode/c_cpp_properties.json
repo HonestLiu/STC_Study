@@ -1,0 +1,77 @@
+{
+    "configurations": [
+        {
+            "name": "windows-gcc-x64",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "D:\\AppData\\Keil_v5\\C51\\INC",
+                "d:\\Develop\\STC8H\\day14-RTX51\\01_RTX51-多任务\\OS",
+                "d:\\Develop\\STC8H\\day14-RTX51\\01_RTX51-多任务"
+            ],
+            "defines": [
+                "__C51__",
+                "__VSCODE_C51__",
+                "reentrant=",
+                "compact=",
+                "small=",
+                "large=",
+                "data=",
+                "idata=",
+                "pdata=",
+                "bdata=",
+                "xdata=",
+                "code=",
+                "bit=char",
+                "sbit=char",
+                "sfr=char",
+                "sfr16=int",
+                "sfr32=int",
+                "interrupt=",
+                "using=",
+                "_at_=",
+                "_priority_=",
+                "_task_="
+            ],
+            "intelliSenseMode": "windows-gcc-x64",
+            "cStandard": "${default}",
+            "cppStandard": "${default}",
+            "compilerPath": "D:/AppData/MinGW/mingw64/bin/gcc.exe"
+        },
+        {
+            "name": "RTX51",
+            "includePath": [
+                "d:\\Develop\\STC8H\\day16\\02_蓝牙模块_接收数据并执行\\Lib",
+                "D:\\AppData\\Keil_v5\\C51\\INC",
+                "d:\\Develop\\STC8H\\day16\\02_蓝牙模块_接收数据并执行\\OS",
+                "d:\\Develop\\STC8H\\day16\\02_蓝牙模块_接收数据并执行\\User",
+                "d:\\Develop\\STC8H\\day16\\02_蓝牙模块_接收数据并执行\\Drive"
+            ],
+            "defines": [
+                "__C51__",
+                "__VSCODE_C51__",
+                "reentrant=",
+                "compact=",
+                "small=",
+                "large=",
+                "data=",
+                "idata=",
+                "pdata=",
+                "bdata=",
+                "xdata=",
+                "code=",
+                "bit=char",
+                "sbit=char",
+                "sfr=char",
+                "sfr16=int",
+                "sfr32=int",
+                "interrupt=",
+                "using=",
+                "_at_=",
+                "_priority_=",
+                "_task_="
+            ],
+            "intelliSenseMode": "${default}"
+        }
+    ],
+    "version": 4
+}

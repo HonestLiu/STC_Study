@@ -1,0 +1,9 @@
+".\Objects\Delay.obj",
+".\Objects\GPIO.obj",
+".\Objects\NVIC.obj",
+".\Objects\UART.obj",
+".\Objects\UART_Isr.obj",
+".\Objects\main.obj" 
+TO ".\Objects\DHT11" 
+PRINT(".\Listings\DHT11.m51") RAMSIZE(256) 
+DISABLEWARNING (16) 

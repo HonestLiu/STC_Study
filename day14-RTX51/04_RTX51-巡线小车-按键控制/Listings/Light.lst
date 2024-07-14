@@ -1,0 +1,59 @@
+C51 COMPILER V9.60.7.0   LIGHT                                                             07/10/2024 13:48:00 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LIGHT
+OBJECT MODULE PLACED IN .\Objects\Light.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE Drive\Light.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Lib) DEBUG OBJEC
+                    -TEXTEND PRINT(.\Listings\Light.lst) TABS(2) OBJECT(.\Objects\Light.obj)
+
+line level    source
+
+   1          #include "Light.h"
+   2          
+   3          void Light_init(void) { GPIO_INIT(); }
+   4          
+   5          // 开灯
+   6          void Light_on(Light light) {
+   7   1        switch (light) {
+   8   2        case LEFT:
+   9   2          L_LIGHT = 1;
+  10   2          break;
+  11   2        case RIGHT:
+  12   2          R_LIGHT = 1;
+  13   2          break;
+  14   2        case ALL:
+  15   2          L_LIGHT = 1;
+  16   2          R_LIGHT = 1;
+  17   2          break;
+  18   2        }
+  19   1      }
+  20          
+  21          // 关灯
+  22          void Light_off(Light light) {
+  23   1        switch (light) {
+  24   2        case LEFT:
+  25   2          L_LIGHT = 0;
+  26   2          break;
+  27   2        case RIGHT:
+  28   2          R_LIGHT = 0;
+  29   2          break;
+  30   2        case ALL:
+  31   2          L_LIGHT = 0;
+  32   2          R_LIGHT = 0;
+  33   2          break;
+  34   2        }
+  35   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     57    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,77 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              07/10/2024 15:42:59 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE User\main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Lib) DEBUG OBJECTE
+                    -XTEND PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "../Drive/Key.h"
+   2          #include "../Drive/Light.h"
+   3          #include "../Drive/battery.h"
+   4          #include "../Drive/Buzzer.h"
+   5          #include "Config.h"
+   6          #include "GPIO.h"
+   7          #include "RTX51TNY.h" //RTX51的系统头文件
+   8          
+   9          void sys_init() {
+  10   1        EAXSFR();
+  11   1      
+  12   1        Light_init();//初始化转向灯
+  13   1        KEY_init();//初始化按钮
+  14   1        Battery_init(); // 初始化ADC电源检测
+  15   1        buzzer_init();//初始化蜂鸣器
+  16   1      
+  17   1        EA = 1;
+  18   1      }
+  19          
+  20          void start() _task_ 0 {
+  21   1        sys_init();
+  22   1        os_create_task(1); // 创建任务1
+  23   1                           // os_create_task(2);//创建任务2
+  24   1      
+  25   1        // 销毁自己
+  26   1        os_delete_task(0);
+  27   1      }
+  28          
+  29          void KEY_down() {
+  30   1        float voltage;
+  31   1        Light_on(ALL);
+  32   1        Battery_get_voltage(&voltage);//获取电源ADC检测结果
+  33   1        buzzer_beep();//无源蜂鸣器发出声音
+  34   1        }
+  35          
+  36          void KEY_up() { Light_off(ALL); }
+  37          
+  38          void task1() _task_ 1 {
+  39   1      
+  40   1        while (1) {
+  41   2          KEY_scan();
+  42   2          os_wait2(K_TMO, 2);
+  43   2        }
+  44   1      }
+  45          
+  46            /* void task2() _task_ 2 {
+  47          
+  48              while (1) {
+  49          
+  50              }
+  51            } */
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+C51 COMPILER V9.60.7.0   MAIN                                                              07/10/2024 15:42:59 PAGE 2   
+
+   CODE SIZE        =     65    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       4
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

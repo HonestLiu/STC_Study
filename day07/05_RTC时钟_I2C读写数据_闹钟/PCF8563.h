@@ -36,7 +36,7 @@ typedef struct {
 //初始化函数
 void PCF8563_init(void);
 //设置时钟信息函数
-void PCF8563_set(Clock_t *c);
+void PCF8563_set(Clock_t c);
 //获取时钟信息函数->通过参数指针返回要取的数据
 void PCF8563_get(Clock_t *c);
 

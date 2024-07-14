@@ -1,0 +1,18 @@
+".\Objects\Conf_tny.obj",
+".\OS\RTX51TNY.LIB",
+".\Objects\main.obj",
+".\Objects\GPIO.obj",
+".\Objects\ADC.obj",
+".\Objects\ADC_Isr.obj",
+".\Objects\UART.obj",
+".\Objects\UART_Isr.obj",
+".\Objects\NVIC.obj",
+".\Objects\Light.obj",
+".\Objects\Key.obj",
+".\Objects\battery.obj",
+".\Objects\Buzzer.obj",
+".\Objects\Ultrasonic .obj",
+".\Objects\Track.obj" 
+TO ".\Objects\project" Rtx51Tiny 
+PRINT(".\Listings\project.m51") RAMSIZE(256) 
+DISABLEWARNING (16) 

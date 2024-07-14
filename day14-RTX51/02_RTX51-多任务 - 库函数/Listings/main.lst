@@ -1,0 +1,76 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              07/10/2024 10:06:18 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE User\main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Lib) DEBUG OBJECTE
+                    -XTEND PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "RTX51TNY.h" //RTX51的系统头文件
+   2          #include "Config.h"
+   3          #include "GPIO.h"
+   4          
+   5          void GPIO_config(){
+   6   1        GPIO_InitTypeDef gpio_init_struct;
+   7   1        gpio_init_struct.Mode = GPIO_PullUp;
+   8   1        gpio_init_struct.Pin = GPIO_Pin_0 | GPIO_Pin_1;
+   9   1        GPIO_Inilize(GPIO_P1,&gpio_init_struct);
+  10   1        
+  11   1      //  gpio_init_struct.Mode = GPIO_PullUp;
+  12   1      //  gpio_init_struct.Pin = GPIO_Pin_5;
+  13   1      //  GPIO_Inilize(GPIO_P4,&gpio_init_struct);
+  14   1      }
+  15          
+  16          void sys_init(){
+  17   1        EAXSFR();
+  18   1        
+  19   1        GPIO_config();
+  20   1        
+  21   1        EA = 1;
+  22   1        
+  23   1      }
+  24          
+  25          void start() _task_ 0 {
+  26   1        sys_init();
+  27   1        os_create_task(1); // 创建任务1
+  28   1        os_create_task(2);//创建任务2
+  29   1        
+  30   1        // 销毁自己
+  31   1          os_delete_task(0);
+  32   1      }
+  33          
+  34          void task1() _task_ 1 {
+  35   1      
+  36   1        while (1) {
+  37   2          P10 = !P10;
+  38   2          // 不占用系统资源, 告诉操作系统,
+  39   2          // 当前任务在等待(在24M运行频率下，200正好对应1000ms)
+  40   2          os_wait2(K_TMO, 200); // 5ms * 200 = 1000ms (24M)
+  41   2        }
+  42   1      }
+  43          
+  44          void task2() _task_ 2 {
+  45   1      
+  46   1        while (1) {
+  47   2          P11 = !P11;
+  48   2          os_wait2(K_TMO, 200);
+  49   2        }
+  50   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     65    ----
+C51 COMPILER V9.60.7.0   MAIN                                                              07/10/2024 10:06:18 PAGE 2   
+
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

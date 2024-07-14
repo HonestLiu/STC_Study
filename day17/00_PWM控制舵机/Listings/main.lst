@@ -1,0 +1,154 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              07/14/2024 14:22:26 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE User\main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\
+                    -Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "../Lib/Config.h"
+   2          #include "../Lib/Delay.h"
+   3          #include "../Lib/Exti.h"
+   4          #include "../Lib/GPIO.h"
+   5          #include "../Lib/NVIC.h"
+   6          #include "../Lib/STC8H_PWM.h"
+   7          #include "../Lib/Switch.h"
+   8          #include "../Lib/UART.h"
+   9          
+  10          /**
+  11           * 初始化GPIO
+  12           * - PWM6的P21
+  13           * - Key的P32(板载),外部中断0引脚
+  14           */
+  15          void GPIO_Config() {
+  16   1        GPIO_InitTypeDef gpio_init_struct;
+  17   1      
+  18   1        // 初始化PWM引脚
+  19   1        gpio_init_struct.Mode = GPIO_PullUp; // 准双向
+  20   1        gpio_init_struct.Pin = GPIO_Pin_1;
+  21   1        GPIO_Inilize(GPIO_P2, &gpio_init_struct);
+  22   1        // 初始化KEY引脚
+  23   1        gpio_init_struct.Mode = GPIO_PullUp; // 准双向
+  24   1        gpio_init_struct.Pin = GPIO_Pin_2;
+  25   1        GPIO_Inilize(GPIO_P3, &gpio_init_struct);
+  26   1      }
+  27          
+  28          // 初始化UART
+  29          void UART_config(void) {
+  30   1        COMx_InitDefine COMx_InitStructure;
+  31   1        COMx_InitStructure.UART_Mode = UART_8bit_BRTx;
+  32   1        COMx_InitStructure.UART_BRT_Use = BRT_Timer1;
+  33   1        COMx_InitStructure.UART_BaudRate = 115200ul;
+  34   1        COMx_InitStructure.UART_RxEnable = ENABLE;
+  35   1        COMx_InitStructure.BaudRateDouble = DISABLE;
+  36   1        UART_Configuration(UART1, &COMx_InitStructure);
+  37   1      
+  38   1        NVIC_UART1_Init(ENABLE, Priority_1);
+  39   1        UART1_SW(UART1_SW_P30_P31);
+  40   1      }
+  41          
+  42          #define FREQ 50                                 // 要输出的PWM频率
+  43          #define Prescaler 10                            // 分频系数
+  44          #define PERIOD (MAIN_Fosc / (FREQ * Prescaler)) // 重装载寄存器的值
+  45          void PWM_config(void) {
+  46   1        PWMx_InitDefine PWMx_InitStructure;
+  47   1      
+  48   1        // 配置PWM6
+  49   1        PWMx_InitStructure.PWM_Mode = CCMRn_PWM_MODE1;
+  50   1        PWMx_InitStructure.PWM_Duty = 0;
+  51   1        PWMx_InitStructure.PWM_EnoSelect = ENO6P;
+  52   1        PWM_Configuration(PWM6, &PWMx_InitStructure);
+  53   1      
+  54   1        // 配置PWMB
+C51 COMPILER V9.60.7.0   MAIN                                                              07/14/2024 14:22:26 PAGE 2   
+
+  55   1        PWMx_InitStructure.PWM_Period = PERIOD - 1;    // 周期时间
+  56   1        PWMx_InitStructure.PWM_DeadTime = 0;           // 死区发生器设置, 0~255
+  57   1        PWMx_InitStructure.PWM_MainOutEnable = ENABLE; // 主输出使能, ENABLE,DISABLE
+  58   1        PWMx_InitStructure.PWM_CEN_Enable = ENABLE; // 使能计数器, ENABLE,DISABLE
+  59   1        PWM_Configuration(PWMB, &PWMx_InitStructure); // 初始化PWM通用寄存器
+  60   1      
+  61   1        // 给PWMB设置预分频系数
+  62   1        PWMB_Prescaler(Prescaler - 1);
+  63   1      
+  64   1        // 切换PWM通道
+  65   1        PWM6_SW(PWM6_SW_P21); // PWM6_SW_P21,PWM6_SW_P54,PWM6_SW_P01,PWM6_SW_P75
+  66   1      
+  67   1        // 初始化PWMB的中断
+  68   1        NVIC_PWM_Init(PWMB, DISABLE, Priority_0);
+  69   1      }
+  70          
+  71          // 初始化外部中断
+  72          void Exti_config(void) {
+  73   1        EXTI_InitTypeDef Exti_InitStructure;
+  74   1      
+  75   1        Exti_InitStructure.EXTI_Mode = EXT_MODE_Fall;
+  76   1        Ext_Inilize(EXT_INT0, &Exti_InitStructure);
+  77   1        NVIC_INT0_Init(ENABLE, Priority_0);
+  78   1      }
+  79          
+  80          PWMx_Duty dutyB;
+  81          u16 duty_value = 500;
+  82          void ext_int0_call(void) {
+  83   1        static int step = 500;
+  84   1        float angle = 0;
+  85   1        // 当中断触发时的实现逻辑
+  86   1        delay_ms(5); // 防抖
+  87   1        if (P32 != 0) {
+  88   2          return;
+  89   2        }
+  90   1        duty_value += step;
+  91   1      
+  92   1        if (duty_value >= 2500) {
+  93   2          step = -500;
+  94   2        } else if (duty_value <= 500) {
+  95   2          step = +500;
+  96   2        }
+  97   1        printf("Key_Down,duty=%d\n", duty_value);
+  98   1        // duty范围: 500us ~ 2500us
+  99   1        // -500 >> 0us ~ 500us
+ 100   1        // ÷2000 >> 0 ~ 1.0
+ 101   1        // * 180 >>即可得到对应的角度了
+ 102   1        angle = ((duty_value - 500) * 180.0f) / 2000;
+ 103   1        printf("angle: %.2f\n", angle);
+ 104   1      
+ 105   1        // 在这里更新占空比即可控制舵机
+ 106   1        // Duty = 48,000(20ms) * (500 /20000) = 20ms * 0.025 = 0.5ms
+ 107   1        dutyB.PWM6_Duty = PERIOD * duty_value / 20000;
+ 108   1        UpdatePwm(PWM6, &dutyB);
+ 109   1      }
+ 110          
+ 111          int main() {
+ 112   1        EAXSFR(); /* 扩展寄存器访问使能 */
+ 113   1      
+ 114   1        GPIO_Config();
+ 115   1        UART_config();
+ 116   1        Exti_config();
+C51 COMPILER V9.60.7.0   MAIN                                                              07/14/2024 14:22:26 PAGE 3   
+
+ 117   1        PWM_config();
+ 118   1      
+ 119   1        EA = 1;
+ 120   1      
+ 121   1        dutyB.PWM6_Duty = PERIOD * 500 / 20000;
+ 122   1        UpdatePwm(PWM6, &dutyB);
+ 123   1      
+ 124   1        while (1) {
+ 125   2        }
+ 126   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    388    ----
+   CONSTANT SIZE    =     31    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     20      25
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

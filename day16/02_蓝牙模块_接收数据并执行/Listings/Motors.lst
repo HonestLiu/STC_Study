@@ -1,0 +1,160 @@
+C51 COMPILER V9.60.7.0   MOTORS                                                            07/13/2024 20:52:08 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MOTORS
+OBJECT MODULE PLACED IN .\Objects\Motors.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE Drive\Motors.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Lib) DEBU
+                    -G OBJECTEXTEND PRINT(.\Listings\Motors.lst) TABS(2) OBJECT(.\Objects\Motors.obj)
+
+line level    source
+
+   1          #include "Motors.h"
+   2          #include "../Lib/GPIO.h"
+   3          #include "../Lib/NVIC.h"
+   4          #include "../Lib/STC8H_PWM.h"
+   5          #include "../Lib/Switch.h"
+   6          
+   7          #define LQ_B P17
+   8          #define LQ_F P16
+   9          #define RQ_B P15
+  10          #define RQ_F P14
+  11          #define LH_B P20
+  12          #define LH_F P21
+  13          #define RH_F P22
+  14          #define RH_B P23
+  15          
+  16          // speed范围: -100 ~ 100
+  17          // duty范围: 0 ~ 100
+  18          int Speed2Duty(int speed) {
+  19   1        // speed /2 => -50 ~ 50
+  20   1        // speed /2 + 50 => 0 ~ 100
+  21   1        return speed /2 + 50;
+  22   1      }
+  23              
+  24          #define PERIOD (MAIN_Fosc / 1000)
+  25          PWMx_Duty dutyA;
+  26          void Motor_config(MotorCfg *mc) { // 通过传入的duty值调整占空比
+  27   1        PWMx_InitDefine PWMx_InitStructure;
+  28   1      
+  29   1        int LH_duty = Speed2Duty(mc->LH_speed);
+  30   1        int RH_duty = Speed2Duty(mc->RH_speed);
+  31   1        int RQ_duty = Speed2Duty(mc->RQ_speed);
+  32   1        int LQ_duty = Speed2Duty(mc->LQ_speed);
+  33   1      
+  34   1        // 配置PWM1 LH
+  35   1        PWMx_InitStructure.PWM_Mode = CCMRn_PWM_MODE1; // 模式
+  36   1        PWMx_InitStructure.PWM_Duty = PERIOD * LH_duty / 100; // PWM占空比时间
+  37   1        PWMx_InitStructure.PWM_EnoSelect = (mc->LH_speed == 0 ? 0:(ENO1P | ENO1N)); // 输出通道选择(当速
+             -度为0时不选择)
+  38   1        PWM_Configuration(PWM1, &PWMx_InitStructure); // 初始化PWM
+  39   1        // 配置PWM2 RH
+  40   1        PWMx_InitStructure.PWM_Mode = CCMRn_PWM_MODE2;  
+  41   1        PWMx_InitStructure.PWM_Duty = PERIOD * RH_duty / 100; // PWM占空比时间
+  42   1        PWMx_InitStructure.PWM_EnoSelect =  (mc->RH_speed == 0 ? 0 : (ENO2P | ENO2N)); // 输出通道选择(当
+             -速度为0时不选择)
+  43   1        PWM_Configuration(PWM2, &PWMx_InitStructure); // 初始化PWM
+  44   1        // 配置PWM3 RQ
+  45   1        PWMx_InitStructure.PWM_Mode = CCMRn_PWM_MODE1; // 模式
+  46   1        PWMx_InitStructure.PWM_Duty = PERIOD * RQ_duty / 100; // PWM占空比时间, 0~Period
+  47   1        PWMx_InitStructure.PWM_EnoSelect = (mc->RQ_speed == 0 ? 0 : (ENO3P | ENO3N)); // 输出通道选择(当�
+             -��度为0时不选择)
+  48   1        PWM_Configuration(PWM3, &PWMx_InitStructure);
+  49   1        // 配置PWM4 LQ
+  50   1        PWMx_InitStructure.PWM_Mode = CCMRn_PWM_MODE1; // 模式,
+  51   1        PWMx_InitStructure.PWM_Duty = PERIOD * LQ_duty / 100; // PWM占空比时间, 0~Period
+C51 COMPILER V9.60.7.0   MOTORS                                                            07/13/2024 20:52:08 PAGE 2   
+
+  52   1        PWMx_InitStructure.PWM_EnoSelect = (mc->LQ_speed == 0 ? 0 : (ENO4P | ENO4N)); //输出通道选择(当�
+             -�度为0时不选择)
+  53   1        PWM_Configuration(PWM4, &PWMx_InitStructure);
+  54   1      
+  55   1        // 配置PWMA
+  56   1        PWMx_InitStructure.PWM_Period = PERIOD - 1;    // 周期时间,   0~65535
+  57   1        PWMx_InitStructure.PWM_DeadTime = 0;           // 死区发生器设置, 0~255
+  58   1        PWMx_InitStructure.PWM_MainOutEnable = ENABLE; // 主输出使能, ENABLE,DISABLE
+  59   1        PWMx_InitStructure.PWM_CEN_Enable = ENABLE; // 使能计数器, ENABLE,DISABLE
+  60   1        PWM_Configuration(PWMA,  &PWMx_InitStructure); // 初始化PWM通用寄存器,  
+  61   1      
+  62   1        // 切换PWM通道
+  63   1        // LH
+  64   1        PWM1_SW(PWM1_SW_P20_P21); // PWM1_SW_P10_P11,PWM1_SW_P20_P21,PWM1_SW_P60_P61
+  65   1        // RH
+  66   1        PWM2_SW(PWM2_SW_P22_P23); // PWM2_SW_P12_P13,PWM2_SW_P22_P23,PWM2_SW_P62_P63
+  67   1        // RQ
+  68   1        PWM3_SW(PWM3_SW_P14_P15); // PWM3_SW_P14_P15,PWM3_SW_P24_P25,PWM3_SW_P64_P65
+  69   1        // LQ
+  70   1        PWM4_SW(PWM4_SW_P16_P17); // PWM4_SW_P16_P17,PWM4_SW_P26_P27,PWM4_SW_P66_P67,PWM4_SW_P34_P33
+  71   1      
+  72   1        // 初始化PWMA的中断
+  73   1        NVIC_PWM_Init(PWMA, DISABLE, Priority_0);
+  74   1      }
+  75          
+  76          void GPIO_Config(void) {
+  77   1        // 初始化为准双向即可
+  78   1        P1_MODE_IO_PU(GPIO_Pin_7 | GPIO_Pin_6 | GPIO_Pin_4 | GPIO_Pin_5);
+  79   1        P2_MODE_IO_PU(GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_3);
+  80   1      }
+  81          
+  82          void Motor_init() {
+  83   1        // 只初始化GPIO，PWM每次调整设置一次(某些芯片直接修改可能会出现问题)
+  84   1        GPIO_Config();
+  85   1      }
+  86          
+  87          void Motor_forward(int speed) {
+  88   1        MotorCfg mc;
+  89   1        mc.LQ_speed = speed;
+  90   1        mc.RQ_speed = speed;
+  91   1        mc.LH_speed = speed;
+  92   1        mc.RH_speed = speed;
+  93   1        Motor_config(&mc);
+  94   1        }
+  95            void Motor_backward(int speed) {
+  96   1        MotorCfg mc;
+  97   1        mc.LQ_speed = -speed;
+  98   1        mc.RQ_speed = -speed;
+  99   1        mc.LH_speed = -speed;
+ 100   1        mc.RH_speed = -speed;
+ 101   1        Motor_config(&mc);
+ 102   1      }
+ 103          
+ 104          void Motor_left(int speed) {
+ 105   1         MotorCfg mc;
+ 106   1        mc.LQ_speed = 0;
+ 107   1        mc.RQ_speed = speed;
+ 108   1        mc.LH_speed = 0;
+ 109   1        mc.RH_speed = speed;
+ 110   1        Motor_config(&mc);
+ 111   1      }
+ 112          void Motor_right(int speed) {
+C51 COMPILER V9.60.7.0   MOTORS                                                            07/13/2024 20:52:08 PAGE 3   
+
+ 113   1         MotorCfg mc;
+ 114   1        mc.LQ_speed = speed;
+ 115   1        mc.RQ_speed = 0;
+ 116   1        mc.LH_speed = speed;
+ 117   1        mc.RH_speed = 0;
+ 118   1        Motor_config(&mc);
+ 119   1      }
+ 120          
+ 121          void Motor_stop() {
+ 122   1         MotorCfg mc;
+ 123   1        mc.LQ_speed = 0;
+ 124   1        mc.RQ_speed = 0;
+ 125   1        mc.LH_speed = 0;
+ 126   1        mc.RH_speed = 0;
+ 127   1        Motor_config(&mc);
+ 128   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    757    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =     16      60
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

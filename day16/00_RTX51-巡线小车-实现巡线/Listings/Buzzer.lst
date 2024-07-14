@@ -1,0 +1,49 @@
+C51 COMPILER V9.60.7.0   BUZZER                                                            07/12/2024 13:27:29 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE BUZZER
+OBJECT MODULE PLACED IN .\Objects\Buzzer.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE Drive\Buzzer.c LARGE OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Lib) DEBU
+                    -G OBJECTEXTEND PRINT(.\Listings\Buzzer.lst) TABS(2) OBJECT(.\Objects\Buzzer.obj)
+
+line level    source
+
+   1          #include "Buzzer.h"
+   2          
+   3          void Delay100us(void) //@24.000MHz
+   4          {
+   5   1        unsigned char data i, j;
+   6   1      
+   7   1        i = 3;
+   8   1        j = 82;
+   9   1        do {
+  10   2          while (--j)
+  11   2            ;
+  12   2        } while (--i);
+  13   1      }
+  14          
+  15          void buzzer_init() { BUZZER_IO_INIT(); }
+  16          
+  17          void buzzer_beep() {
+  18   1        int i = 1000;
+  19   1      
+  20   1        // 人为的生产周期为0.2ms为周期的PWM方波，对应频率就是1000 /0.2 = 5000
+  21   1        while (i-- > 0) {
+  22   2          BUZZER = !BUZZER;
+  23   2          Delay100us();
+  24   2        }
+  25   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     49    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

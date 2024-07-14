@@ -1,0 +1,129 @@
+C51 COMPILER V9.60.7.0   MATRIXKEYS                                                        07/05/2024 08:41:36 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MATRIXKEYS
+OBJECT MODULE PLACED IN .\Objects\MatrixKeys.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE MatrixKeys.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.
+                    -\Listings\MatrixKeys.lst) TABS(2) OBJECT(.\Objects\MatrixKeys.obj)
+
+line level    source
+
+   1          #include "MatrixKeys.h"
+   2          #include "GPIO.h"
+   3          
+   4          #define Row1 P34
+   5          #define Row2 P35
+   6          #define Row3 P40
+   7          #define Row4 P41
+   8          #define COL1 P03
+   9          #define COL2 P06
+  10          #define COL3 P07
+  11          #define COL4 P17
+  12          
+  13          //将矩阵键盘的相关引脚全部初始化为准双向
+  14          static void GPIO_config() {
+  15   1          P0_MODE_IO_PU(GPIO_Pin_3 | GPIO_Pin_6 | GPIO_Pin_7);
+  16   1          P1_MODE_IO_PU(GPIO_Pin_7);
+  17   1          P3_MODE_IO_PU(GPIO_Pin_4 | GPIO_Pin_5);
+  18   1          P4_MODE_IO_PU(GPIO_Pin_0 | GPIO_Pin_1);
+  19   1      }
+  20          
+  21          void MK_init() {
+  22   1          GPIO_config();
+  23   1      }
+  24          
+  25          //按下为低电平，抬起为高电平
+  26          #define DOWN 0
+  27          #define UP 1
+  28          
+  29          //记录按钮前一刻的状态
+  30          /*u8 key_last_state[16] = {
+  31                  UP, UP, UP, UP,
+  32                  UP, UP, UP, UP,
+  33                  UP, UP, UP, UP,
+  34                  UP, UP, UP, UP
+  35          };*/
+  36          u16 key_last_state = 0xFFFF;
+  37          
+  38          //按键之前的状态是否为抬起
+  39          #define IS_KEY_UP(row_id, col_id) (key_last_state & (1 << (4 * row_id + col_id))) > 0
+  40          //按键之前的状态是否为按下
+  41          #define IS_KEY_DOWN(row_id, col_id) (key_last_state & (1 << (4 * row_id + col_id))) == 0
+  42          //修改按键当前状态为按下
+  43          #define SET_KEY_DOWN(row_id, col_id) key_last_state &=~ (1 << (4 * row_id + col_id))
+  44          //修改按键当前状态为抬起
+  45          #define SET_KEY_UP(row_id, col_id) key_last_state |= (1 << (4 * row_id + col_id))
+  46          
+  47          
+  48          //根据传入的行id改变行的电平状态，以进入监听状态
+  49          void chang_row_state(u8 row_id) {
+  50   1          Row1 = (row_id == 0 ? 0 : 1);
+  51   1          Row2 = (row_id == 1 ? 0 : 1);
+  52   1          Row3 = (row_id == 2 ? 0 : 1);
+  53   1          Row4 = (row_id == 3 ? 0 : 1);
+  54   1      }
+C51 COMPILER V9.60.7.0   MATRIXKEYS                                                        07/05/2024 08:41:36 PAGE 2   
+
+  55          
+  56          //根据列id获取列的电平状态
+  57          u8 col_id_get_state(u8 col_id) {
+  58   1          switch (col_id) {
+  59   2              case 0:
+  60   2                  return COL1;
+  61   2                  break;
+  62   2              case 1:
+  63   2                  return COL2;
+  64   2                  break;
+  65   2              case 2:
+  66   2                  return COL3;
+  67   2                  break;
+  68   2              case 3:
+  69   2                  return COL4;
+  70   2                  break;
+  71   2              default:
+  72   2                  return 0;
+  73   2                  break;
+  74   2          }
+  75   1      }
+  76          
+  77          
+  78          void MK_scan() {
+  79   1          u8 row_id;//行号ID
+  80   1          u8 col_id;//列号ID
+  81   1      
+  82   1          //循环行
+  83   1          for (row_id = 0; row_id < 4; row_id++) {
+  84   2              //循环到哪一行，哪一行就切换成低电平(进入监听)
+  85   2              chang_row_state(row_id);
+  86   2              //遍历每一列的电平状态，以判断是否按下
+  87   2              for (col_id = 0; col_id < 4; col_id++) {
+  88   3                  //按键按下
+  89   3                  if (col_id_get_state(col_id) == DOWN && IS_KEY_UP(row_id, col_id)) {
+  90   4                      //更新状态
+  91   4                      SET_KEY_DOWN(row_id, col_id);
+  92   4                      //按键按下的回调函数
+  93   4                      MK_on_keydown(row_id, col_id);
+  94   4                  } else if (col_id_get_state(col_id) == UP && IS_KEY_DOWN(row_id, col_id)) {
+  95   4                      SET_KEY_UP(row_id, col_id);
+  96   4                      //按键按下的回调函数
+  97   4                      MK_on_keyup(row_id, col_id);
+  98   4      
+  99   4                  }
+ 100   3              }
+ 101   2      
+ 102   2          }
+ 103   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    263    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      2       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

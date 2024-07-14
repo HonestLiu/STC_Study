@@ -1,0 +1,12 @@
+".\Objects\Delay.obj",
+".\Objects\GPIO.obj",
+".\Objects\I2C.obj",
+".\Objects\main.obj",
+".\Objects\NVIC.obj",
+".\Objects\PCF8563.obj",
+".\Objects\UART.obj",
+".\Objects\UART_Isr.obj",
+".\Objects\oled.obj" 
+TO ".\Objects\OLED" 
+PRINT(".\Listings\OLED.m51") RAMSIZE(256) 
+DISABLEWARNING (16) 

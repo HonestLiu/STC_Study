@@ -1,0 +1,222 @@
+C51 COMPILER V9.60.7.0   PCF8563                                                           07/02/2024 18:09:54 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE PCF8563
+OBJECT MODULE PLACED IN .\Objects\PCF8563.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE PCF8563.c LARGE OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRIN
+                    -T(.\Listings\PCF8563.lst) TABS(2) OBJECT(.\Objects\PCF8563.obj)
+
+line level    source
+
+   1          #include "PCF8563.h"
+   2          #include "GPIO.h"
+   3          #include "I2C.h"
+   4          #include "NVIC.h"
+   5          #include "Switch.h"
+   6          
+   7          /****************  I2C GPIO初始化函数 *****************/
+   8          //SCL --> P32   SDA --> P33
+   9          static void GPIO_config() {
+  10   1          GPIO_InitTypeDef gpio_init_struct;
+  11   1          gpio_init_struct.Mode = GPIO_OUT_OD;//开漏输出
+  12   1          gpio_init_struct.Pin = GPIO_Pin_2 | GPIO_Pin_3;//I2C总线所使用的两个IO
+  13   1          GPIO_Inilize(GPIO_P3, &gpio_init_struct);
+  14   1      }
+  15          
+  16          /****************  I2C初始化函数 *****************/
+  17          void I2C_config(void) {
+  18   1          I2C_InitTypeDef I2C_InitStructure;
+  19   1      
+  20   1          I2C_InitStructure.I2C_Mode = I2C_Mode_Master;    //主从选择   I2C_Mode_Master, I2C_Mode_Slave
+  21   1          I2C_InitStructure.I2C_Enable = ENABLE;            //I2C功能使能,   ENABLE, DISABLE
+  22   1          I2C_InitStructure.I2C_MS_WDTA = DISABLE;            //主机使能自动发送,  ENABLE, DISABLE
+  23   1          I2C_InitStructure.I2C_Speed = 13;                //总线速度=Fosc/2/(Speed*2+4),      0~63
+  24   1          I2C_Init(&I2C_InitStructure);
+  25   1          NVIC_I2C_Init(I2C_Mode_Master, DISABLE,
+  26   1                        Priority_0);    //主从模式, I2C_Mode_Master, I2C_Mode_Slave; 中断使能, ENABLE/DI
+             -SABLE; 优先级(低到高) Priority_0,Priority_1,Priority_2,Priority_3
+  27   1      
+  28   1          I2C_SW(I2C_P33_P32);                    //I2C_P14_P15,I2C_P24_P25,I2C_P33_P32
+  29   1      }
+  30          
+  31          
+  32          void PCF8563_init(void) {
+  33   1          EAXSFR();//使能拓展寄存器
+  34   1          GPIO_config();
+  35   1          I2C_config();
+  36   1      }
+  37          
+  38          
+  39          void PCF8563_set(Clock_t c) {
+  40   1          u8 p[NUMBER];
+  41   1          u8 C = CENTURY;//世纪 0: 2000  1:2100
+  42   1          //将十进制数据转成BCD格式数据-> 和取数据倒着来即可
+  43   1          p[0] = ((c.second / 10) << 4) + (c.second % 10);
+  44   1          p[1] = WRITE_BCD(c.minute);
+  45   1          p[2] = WRITE_BCD(c.hour);
+  46   1          p[3] = c.week;
+  47   1          p[4] = WRITE_BCD(c.day);
+  48   1          C = c.year < 2100 ? 0 : 1;
+  49   1          p[5] = (C << 7) + WRITE_BCD(c.month);
+  50   1          p[6] = WRITE_BCD(c.year % 100);//年的范围是 0 ~99，只取十位即可
+  51   1      
+  52   1          //数据写入
+  53   1          I2C_WriteNbyte(PCF8563_DEV_ADDR, PCF8563_REG_TD, p, NUMBER);
+C51 COMPILER V9.60.7.0   PCF8563                                                           07/02/2024 18:09:54 PAGE 2   
+
+  54   1      }
+  55          
+  56          void PCF8563_get(Clock_t *c) {
+  57   1          u8 p[NUMBER];
+  58   1          u8 C = CENTURY;//世纪 0: 2000  1:2100
+  59   1          //通过I2C读取RTC时钟芯片的秒数据
+  60   1          I2C_ReadNbyte(PCF8563_DEV_ADDR, PCF8563_REG_TD, p, NUMBER);
+  61   1      
+  62   1          //解析得到的数据
+  63   1          c->second = ((p[0] >> 4) & 0x07) * 10 + (p[0] & 0x0F);//秒，高4位全取，低4位全取
+  64   1          c->minute = ((p[1] >> 4) & 0x07) * 10 + (p[1] & 0x0F);//分，高4位全取，低4位全取
+  65   1          c->hour = ((p[2] >> 4) & 0x03) * 10 + (p[2] & 0x0F);//时，高4位需要取两位，低4位全取
+  66   1          c->day = ((p[3] >> 4) & 0x03) * 10 + (p[3] & 0x0F);//天，高4位需要取两位，低4位全取
+  67   1          c->week = p[4] & 0x07;//周,只取低3位
+  68   1          c->month = ((p[5] >> 4) & 0x01) * 10 + (p[5] & 0x0F);//月,高4位取1位，低4位全取
+  69   1          C = p[5] >> 7;//世纪，只取最高位。 --> 0表示20xx年 1表示21xx年
+  70   1          c->year = ((p[6] >> 4) & 0x0F) * 10 + (p[6] & 0x0F);//年，全都要;  --> 其范围是0~99
+  71   1      
+  72   1          /*根据BSD获取的年的范围是0~99，需要得到我们常见的"年"，需要将BSD得到的year
+             -与C所对应的值相加*/
+  73   1          c->year += (C == 0 ? 2000 : 2100);
+  74   1      }
+  75          
+  76          void PCF8563_set_alarm(Alarm_t a) {
+  77   1          //存储闹钟设置值转成BCD码后的值
+  78   1          u8 alarm[4];
+  79   1      
+  80   1          /*2.十进制转BCD码*/
+  81   1          alarm[0] = WRITE_BCD(a.minute);
+  82   1          alarm[0] = WRITE_BCD(a.hour);
+  83   1          alarm[0] = WRITE_BCD(a.day);
+  84   1          alarm[0] = WRITE_BCD(a.week_day);
+  85   1          /*3.将分钟的地址作为写入地址，连续将分、时、天、周写入(会自动递增)*/
+  86   1          I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x09, alarm, 4);
+  87   1      
+  88   1      }
+  89          
+  90          void PCF8563_enable_alarm() {
+  91   1          //存储状态控制寄存器2的值
+  92   1          u8 Control_status_2 = 0;
+  93   1      
+  94   1          //先将状态控制寄存器2整个读出来
+  95   1          I2C_ReadNbyte(PCF8563_DEV_ADDR, 0x01, &Control_status_2, 1);
+  96   1          //清除AF闹钟标记，不清闹钟不会响
+  97   1          Control_status_2 &= ~0x08;
+  98   1          //将AIE位置1，使能闹钟
+  99   1          Control_status_2 |= 0x02;
+ 100   1          //将修改后的状态寄存器2的值写回
+ 101   1          I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x01, &Control_status_2, 1);
+ 102   1      }
+ 103          
+ 104          void PCF8563_disable_alarm() {
+ 105   1          //存储状态控制寄存器2的值
+ 106   1          u8 Control_status_2 = 0;
+ 107   1      
+ 108   1          //先将状态控制寄存器2整个读出来
+ 109   1          I2C_ReadNbyte(PCF8563_DEV_ADDR, 0x01, &Control_status_2, 1);
+ 110   1          //清除AF闹钟标记，不清闹钟不会响
+ 111   1          Control_status_2 &= ~0x08;
+ 112   1          //将AIE位置0，失能闹钟
+ 113   1          Control_status_2 &= ~0x02;
+ 114   1          //将修改后的状态寄存器2的值写回
+C51 COMPILER V9.60.7.0   PCF8563                                                           07/02/2024 18:09:54 PAGE 3   
+
+ 115   1          I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x01, &Control_status_2, 1);
+ 116   1      }
+ 117          
+ 118          
+ 119          void PCF8536_alarm_clear_flag() {
+ 120   1      //存储状态控制寄存器2的值
+ 121   1          u8 Control_status_2 = 0;
+ 122   1      
+ 123   1          //先将状态控制寄存器2整个读出来
+ 124   1          I2C_ReadNbyte(PCF8563_DEV_ADDR, 0x01, &Control_status_2, 1);
+ 125   1          //清除AF闹钟标记，不清闹钟不会响
+ 126   1          Control_status_2 &= ~0x08;
+ 127   1          //将修改后的状态寄存器2的值写回
+ 128   1          I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x01, &Control_status_2, 1);
+ 129   1      }
+ 130          
+ 131          void PCF8563_set_timer(Time_Freq freq, u8 countDown) {
+ 132   1          u8 p = 0;
+ 133   1          //1.定时器控制寄存器，使能定时器和选择定时器时钟源
+ 134   1          p = freq + 0x80;
+ 135   1          I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x0E, &p, 1);
+ 136   1          //2.定时器寄存器，设置定时器的倒计时周期
+ 137   1          p = countDown;//倒计时值为countDown
+ 138   1          I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x0F, &p, 1);
+ 139   1      
+ 140   1      }
+ 141          
+ 142          void PCF8563_enable_timer() {
+ 143   1          u8 CS2 = 0;
+ 144   1          //3.控制寄存器，清除定时器标记和使能定时器中断
+ 145   1          I2C_ReadNbyte(PCF8563_DEV_ADDR, 0x01, &CS2, 1);
+ 146   1          CS2 &= ~0x04;//将TF置0，清除标记位
+ 147   1          CS2 |= 0x01;//将TIE位置1，使能定时器
+ 148   1          I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x01, &CS2, 1);
+ 149   1      }
+ 150          
+ 151          void PCF8563_disable_timer() {
+ 152   1          u8 CS2 = 0;
+ 153   1          //3.控制寄存器，清除定时器标记和使能定时器中断
+ 154   1          I2C_ReadNbyte(PCF8563_DEV_ADDR, 0x01, &CS2, 1);
+ 155   1          CS2 &= ~0x04;//将TF置0，清除标记位
+ 156   1          CS2 &= ~0x01;//将TIE位置0，使能定时器
+ 157   1          I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x01, &CS2, 1);
+ 158   1      }
+ 159          
+ 160          void PCF8536_timer_clear_flag() {
+ 161   1          u8 CS2 = 0;
+ 162   1          I2C_ReadNbyte(PCF8563_DEV_ADDR, 0x01, &CS2, 1);
+ 163   1          CS2 &= ~0x04;//将TF置0，清除标记位
+ 164   1          I2C_WriteNbyte(PCF8563_DEV_ADDR, 0x01, &CS2, 1);
+ 165   1      }
+ 166          
+ 167          //中断回调函数
+ 168          void ext_int3_call(void) {
+ 169   1          u8 CS2 = 0;
+ 170   1      
+ 171   1          //将控制寄存器读出来，获取它的标记位
+ 172   1          I2C_ReadNbyte(PCF8563_DEV_ADDR, 0x01, &CS2, 1);
+ 173   1      
+ 174   1          //看AF位以及AIE位，判断是不是闹钟触发中断
+ 175   1          #ifdef PCF8563_ALARM_ENABLE
+                  if ((CS2 & 0x08) && (CS2 & 0x02)) {
+C51 COMPILER V9.60.7.0   PCF8563                                                           07/02/2024 18:09:54 PAGE 4   
+
+                      //清除闹钟标记，保证下次闹钟可以触发
+                      PCF8536_alarm_clear_flag();
+                      PCF8536_on_alarm();
+                  }
+                  #endif
+ 182   1          #ifdef PCF8563_TIMER_ENABLE
+                  //看TF位以及TIE位，判断是不是定时器中断
+                  if ((CS2 & 0x04) && (CS2 & 0x01)) {
+                      //清除定时器标记，保证下次定时器可以触发
+                      PCF8536_timer_clear_flag();
+                      PCF8536_on_timer();
+                  }
+                  #endif
+ 190   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1073    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----      51
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

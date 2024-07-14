@@ -1,0 +1,179 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              07/03/2024 10:32:09 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listi
+                    -ngs\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include "Config.h"
+   2          #include "Delay.h"
+   3          #include "GPIO.h"
+   4          #include "NVIC.h"
+   5          #include "Switch.h"
+   6          #include "UART.h"
+   7          
+   8          /**
+   9           *
+  10           * */
+  11          #define DHT11 P46
+  12          
+  13          
+  14          // 初始化GPIO-P46为准双向
+  15          void GPIO_config() {
+  16   1          GPIO_InitTypeDef gpio_init_struct;
+  17   1          gpio_init_struct.Mode = GPIO_PullUp;
+  18   1          gpio_init_struct.Pin = GPIO_Pin_6;
+  19   1          GPIO_Inilize(GPIO_P4, &gpio_init_struct);
+  20   1      }
+  21          
+  22          // 初始化UART
+  23          void UART_config(void) {
+  24   1          // >>> 记得添加 NVIC.c, UART.c, UART_Isr.c <<<
+  25   1          COMx_InitDefine COMx_InitStructure;                    //结构定义
+  26   1          COMx_InitStructure.UART_Mode = UART_8bit_BRTx;    //模式, UART_ShiftRight,UART_8bit_BRTx,UART_9bit,U
+             -ART_9bit_BRTx
+  27   1          COMx_InitStructure.UART_BRT_Use = BRT_Timer1;            //选择波特率发生器, BRT_Timer1, BRT_T
+             -imer2 (注意: 串口2固定使用BRT_Timer2)
+  28   1          COMx_InitStructure.UART_BaudRate = 115200ul;            //波特率, 一般 110 ~ 115200
+  29   1          COMx_InitStructure.UART_RxEnable = ENABLE;                //接收允许,   ENABLE或DISABLE
+  30   1          COMx_InitStructure.BaudRateDouble = DISABLE;            //波特率加倍, ENABLE或DISABLE
+  31   1          UART_Configuration(UART1, &COMx_InitStructure);        //初始化串口1 UART1,UART2,UART3,UART4
+  32   1      
+  33   1          NVIC_UART1_Init(ENABLE,
+  34   1                          Priority_1);        //中断使能, ENABLE/DISABLE; 优先级(低到高) Priority_0,Pr
+             -iority_1,Priority_2,Priority_3
+  35   1          UART1_SW(UART1_SW_P30_P31);        // 引脚选择, UART1_SW_P30_P31,UART1_SW_P36_P37,UART1_SW_P16_P17
+             -,UART1_SW_P43_P44
+  36   1      }
+  37          
+  38          //延时1us的函数
+  39          void delay_1us() {
+  40   1          NOP10();
+  41   1      }
+  42          
+  43          // level 当前电平状态
+  44          #define wait_level_change(level, min, max, description)                  \
+  45              cnt = 0;                                                                \
+  46              do {                                                                    \
+  47                  delay_1us();                                                        \
+  48                  cnt++;                                                              \
+  49              } while(DHT11 == level);                                                  \
+  50              if (cnt < min || cnt > max) {                                           \
+C51 COMPILER V9.60.7.0   MAIN                                                              07/03/2024 10:32:09 PAGE 2   
+
+  51                  printf("err: [%s] [%d]us 不满足!\n", description, cnt);              \
+  52                  return -1;                                                          \
+  53              }
+  54          
+  55          
+  56          char on_uart1_receive(u8 *dat) {
+  57   1          u16 cnt = 0;
+  58   1          char i = 0, j = 0;//用来遍历的变量
+  59   1          /*1.主机起始信号拉低时间: 主机起始拉低DHT11引脚的电平*/
+  60   1          printf("start\n");
+  61   1          DHT11 = 0;
+  62   1          delay_ms(20);//保持低电平在一个典型值时长->20ms
+  63   1          /*2.主机释放总线时间: 等待由高电平转换为低电平 时间范围[10,50](50是取了下�
+             -��个状态的中间值，从而判断通信失败)*/
+  64   1          DHT11 = 1;
+  65   1          //计数统计，每1us计数一次，统计消耗的时间
+  66   1          cnt = 0;
+  67   1          do {
+  68   2              delay_1us();
+  69   2              cnt++;
+  70   2          } while (DHT11 == 1 && cnt < 50);
+  71   1          //根据统计消耗时间判断此阶段是否成功
+  72   1          if (cnt < 10 || cnt > 35) {
+  73   2              printf("主机释放时间超时\n");
+  74   2              return -1;
+  75   2          }
+  76   1          /*3.响应低电平时间: 低电平时间 [78:88]*/
+  77   1          wait_level_change(0, 78, 88, "响应低电平时间超时");
+  78   1          /*4.响应高电平时间: 高电平时间 [80:92]*/
+  79   1          wait_level_change(1, 80, 92, "响应高电平时间超时");
+  80   1          /*5.解析接收到的电平，根据高低电平时长区分0或1*/
+  81   1          for (i = 0; i < 5; i++) {//需要读5个byte,每读8个bit循环一次
+  82   2              for (j = 7; j >= 0; j--) {//每次循环读8个bit(数据写入必须从右往左写入⚠)
+  83   3                  u8 bit_dat;
+  84   3                  //统计0、1的数据低电平时间
+  85   3                  wait_level_change(0, 48, 58, "data低电平时间");
+  86   3                  //统计高电平时间，用以判断是0还是1
+  87   3                  wait_level_change(1, 23, 74, "data高电平时间");
+  88   3                  //判断高低电平，然后写入到存储数组中(取中间值47,小于47的为0,高于47�
+             -��为1)
+  89   3                  bit_dat = (cnt >= 48 ? 1 : 0);
+  90   3                  dat[i] |= (bit_dat << j);//位移写入该bit在该byte的对应位置
+  91   3              }
+  92   2          }
+  93   1          printf("Success!! cnt:%d\n", cnt);
+  94   1      
+  95   1          for (i = 0; i < 5; i++) {
+  96   2              printf("%d ", (int) dat[i]);
+  97   2          }
+  98   1      
+  99   1          //校验数据；校验位(第4个数据)＝湿度高位+湿度低位+温度高位+温度低位
+ 100   1          if ((dat[0] + dat[1] + dat[2] + dat[3]) != dat[4]) {
+ 101   2              printf("Data validation failure!!");//数据校验失败
+ 102   2              return -1;
+ 103   2          }
+ 104   1          //成功返回0，实际对数据的处理在main函数中进行
+ 105   1          return 0;
+ 106   1      }
+ 107          
+ 108          int main() {
+ 109   1          char ret = -1;
+ 110   1          float temperature = 0;
+C51 COMPILER V9.60.7.0   MAIN                                                              07/03/2024 10:32:09 PAGE 3   
+
+ 111   1          u8 dat[5] = {0};    // 准备5个字节的容器,接收结果
+ 112   1      
+ 113   1      
+ 114   1          GPIO_config();
+ 115   1          UART_config();
+ 116   1      
+ 117   1          EA = 1;//开启中断
+ 118   1      
+ 119   1          while (1) {
+ 120   2              if (COM1.RX_TimeOut > 0) {
+ 121   3                  //超时计数
+ 122   3                  if (--COM1.RX_TimeOut == 0) {
+ 123   4                      if (COM1.RX_Cnt > 0) {
+ 124   5                          ret = on_uart1_receive(dat);
+ 125   5                          if (ret == 0) {//数据校验成功
+ 126   6                              /*计算湿度*/
+ 127   6                              printf("Humidity:%d % \n", (int) dat[0]);
+ 128   6                              /*计算温度*/
+ 129   6                              // 温度值: 温度高位的后7bit + 温度低位 * 0.1
+ 130   6                              temperature = dat[2] + ((dat[3] & 0x7F) * 0.1);
+ 131   6                              // 温度的正负: 取温度高位的最高位
+ 132   6                              if ((dat[3] & 0x80) > 0) {//为1则为负数
+ 133   7                                  //对获取的温度值进行取反、
+ 134   7                                  temperature = -temperature;
+ 135   7                              }
+ 136   6                              printf("Temperature:%2f C\n", temperature);
+ 137   6                          }
+ 138   5                      }
+ 139   4                      COM1.RX_Cnt = 0;
+ 140   4                  }
+ 141   3              }
+ 142   2              // 不要处理的太快
+ 143   2              delay_ms(10);
+ 144   2          }
+ 145   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    838    ----
+   CONSTANT SIZE    =    246    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      29
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

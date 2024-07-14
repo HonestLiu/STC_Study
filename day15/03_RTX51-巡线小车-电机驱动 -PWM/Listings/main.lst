@@ -1,0 +1,179 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              07/11/2024 10:59:56 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: D:\AppData\Keil_v5\C51\BIN\C51.EXE User\main.c OPTIMIZE(8,SPEED) BROWSE INCDIR(.\Lib) DEBUG OBJECTE
+                    -XTEND PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          // 外部设备
+   2          #include "../Drive/Buzzer.h"
+   3          #include "../Drive/Key.h"
+   4          #include "../Drive/Light.h"
+   5          #include "../Drive/Track.h"
+   6          #include "../Drive/Ultrasonic.h"
+   7          #include "../Drive/battery.h"
+   8          // 片上外设
+   9          #include "../Lib/Config.h"
+  10          #include "../Lib/GPIO.h"
+  11          #include "../Lib/NVIC.h"
+  12          #include "../Lib/STC8H_PWM.h"
+  13          #include "../Lib/Switch.h"
+  14          #include "../Lib/UART.h"
+  15          
+  16          #include "RTX51TNY.h" //RTX51的系统头文件
+  17          
+  18          #define RQ_B P15
+  19          #define RQ_F P14
+  20          
+  21          #define PERIOD (MAIN_Fosc / 1000)
+  22          PWMx_Duty dutyA;
+  23          void PWM_config(void) {
+  24   1        PWMx_InitDefine PWMx_InitStructure;
+  25   1        // 配置PWM3
+  26   1        PWMx_InitStructure.PWM_Mode =
+  27   1            CCMRn_PWM_MODE1; // 模式,
+  28   1                             // CCMRn_FREEZE,CCMRn_MATCH_VALID,CCMRn_MATCH_INVALID,CCMRn_ROLLOVER,CCMRn_FORCE_IN
+             -VALID,CCMRn_FORCE_VALID,CCMRn_PWM_MODE1,CCMRn_PWM_MODE2
+  29   1        PWMx_InitStructure.PWM_Duty =
+  30   1            PERIOD * 50 / 100; // PWM占空比时间->占整个周期的50%
+  31   1        PWMx_InitStructure.PWM_EnoSelect =
+  32   1            ENO3P |
+  33   1            ENO3N; // 输出通道选择, ENO1P,ENO1N,ENO2P,ENO2N,ENO3P,ENO3N,ENO4P,ENO4N
+  34   1                   // / ENO5P,ENO6P,ENO7P,ENO8P
+  35   1        PWM_Configuration(PWM3, &PWMx_InitStructure);
+  36   1      
+  37   1        // 配置PWMA
+  38   1        PWMx_InitStructure.PWM_Period = PERIOD - 1;    // 周期时间,   0~65535
+  39   1        PWMx_InitStructure.PWM_DeadTime = 0;           // 死区发生器设置, 0~255
+  40   1        PWMx_InitStructure.PWM_MainOutEnable = ENABLE; // 主输出使能, ENABLE,DISABLE
+  41   1        PWMx_InitStructure.PWM_CEN_Enable = ENABLE; // 使能计数器, ENABLE,DISABLE
+  42   1        PWM_Configuration(PWMA,
+  43   1                          &PWMx_InitStructure); // 初始化PWM通用寄存器,  PWMA,PWMB
+  44   1      
+  45   1        // 切换PWM通道
+  46   1        PWM3_SW(PWM3_SW_P14_P15); // PWM3_SW_P14_P15,PWM3_SW_P24_P25,PWM3_SW_P64_P65
+  47   1      
+  48   1        // 初始化PWMA的中断
+  49   1        NVIC_PWM_Init(PWMA, DISABLE, Priority_0);
+  50   1      }
+  51          
+  52          void GPIO_Config(void) {
+  53   1        // 初始化为准双向即可
+C51 COMPILER V9.60.7.0   MAIN                                                              07/11/2024 10:59:56 PAGE 2   
+
+  54   1        P1_MODE_IO_PU(GPIO_Pin_4 | GPIO_Pin_5);
+  55   1      }
+  56          
+  57          void UART_config(void) {
+  58   1        // >>> 记得添加 NVIC.c, UART.c, UART_Isr.c <<<
+  59   1        COMx_InitDefine COMx_InitStructure; // 结构定义
+  60   1        COMx_InitStructure.UART_Mode =
+  61   1            UART_8bit_BRTx; // 模式,
+  62   1                            // UART_ShiftRight,UART_8bit_BRTx,UART_9bit,UART_9bit_BRTx
+  63   1        COMx_InitStructure.UART_BRT_Use =
+  64   1            BRT_Timer1; // 选择波特率发生器, BRT_Timer1, BRT_Timer2 (注意:
+  65   1                        // 串口2固定使用BRT_Timer2)
+  66   1        COMx_InitStructure.UART_BaudRate = 115200ul; // 波特率, 一般 110 ~ 115200
+  67   1        COMx_InitStructure.UART_RxEnable = ENABLE; // 接收允许,   ENABLE或DISABLE
+  68   1        COMx_InitStructure.BaudRateDouble = DISABLE; // 波特率加倍, ENABLE或DISABLE
+  69   1        UART_Configuration(
+  70   1            UART1, &COMx_InitStructure); // 初始化串口1 UART1,UART2,UART3,UART4
+  71   1      
+  72   1        NVIC_UART1_Init(ENABLE,
+  73   1                        Priority_1); // 中断使能, ENABLE/DISABLE; 优先级(低到高)
+  74   1                                     // Priority_0,Priority_1,Priority_2,Priority_3
+  75   1        UART1_SW(
+  76   1            UART1_SW_P30_P31); // 引脚选择,
+  77   1                               // UART1_SW_P30_P31,UART1_SW_P36_P37,UART1_SW_P16_P17,UART1_SW_P43_P44
+  78   1      }
+  79          
+  80          void sys_init() {
+  81   1        EAXSFR();
+  82   1        // 片上外设初始化
+  83   1        UART_config(); // 初始化UART
+  84   1        GPIO_Config();
+  85   1        PWM_config();
+  86   1      
+  87   1        // 驱动初始化
+  88   1        Light_init();      // 初始化转向灯
+  89   1        KEY_init();        // 初始化按钮
+  90   1        Battery_init();    // 初始化ADC电源检测
+  91   1        buzzer_init();     // 初始化蜂鸣器
+  92   1        Ultrasonic_init(); // 初始化超声波模块
+  93   1        Track_init();      // 初始化巡线模块
+  94   1      
+  95   1        EA = 1;
+  96   1      }
+  97          
+  98          void start_main() _task_ 0 {
+  99   1        sys_init();
+ 100   1        os_create_task(1); // 创建按键任务
+ 101   1        // os_create_task(2); // 创建巡线任务
+ 102   1      
+ 103   1        // 销毁自己
+ 104   1        os_delete_task(0);
+ 105   1      }
+ 106          
+ 107          u8 d3 = 50; // 电机的占空比 0 ~ 100
+ 108          int direction_step = 10;
+ 109          void KEY_down() {
+ 110   1        Light_on(ALL);
+ 111   1        // 按键按下，调整占空比
+ 112   1        d3 += direction_step;
+ 113   1        if (d3 == 100) {
+ 114   2          direction_step = -10; // 开始递减
+ 115   2        } else if (d3 <= 0) {
+C51 COMPILER V9.60.7.0   MAIN                                                              07/11/2024 10:59:56 PAGE 3   
+
+ 116   2          direction_step = 10; // 开始递增
+ 117   2        }
+ 118   1        dutyA.PWM3_Duty = PERIOD * d3 / 100;
+ 119   1        UpdatePwm(PWM3, &dutyA);
+ 120   1      }
+ 121          
+ 122          void KEY_up() { Light_off(ALL); }
+ 123          
+ 124          void task_Key() _task_ 1 {
+ 125   1      
+ 126   1        while (1) {
+ 127   2          KEY_scan();
+ 128   2          os_wait2(K_TMO, 2);
+ 129   2        }
+ 130   1      }
+ 131          
+ 132          void task_Track() _task_ 2 {
+ 133   1      
+ 134   1        while (1) {
+ 135   2          u8 code states[5];
+ 136   2          char i;
+ 137   2          int pos;
+ 138   2      
+ 139   2          Track_get_state(&states);
+ 140   2          for (i = 4; i >= 0; i--) {
+ 141   3            printf("%d ", (int)states[i]);
+ 142   3          }
+ 143   2          printf("\n");
+ 144   2      
+ 145   2          pos = Track_get_position();
+ 146   2          printf("pos: %d\n", pos);
+ 147   2      
+ 148   2          os_wait2(K_TMO, 40); // 5 * 40 = 200ms,每200ms获取一次
+ 149   2        }
+ 150   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    348    ----
+   CONSTANT SIZE    =     20    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     19      21
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
