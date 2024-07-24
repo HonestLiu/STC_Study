@@ -4,6 +4,11 @@
 #include "NVIC.h"
 #include "Switch.h"
 
+/*
+* SCL - P32
+* SDA - P33
+*/
+
 // 十位取出左移4位 + 个位 (得到BCD数)
 #define WRITE_BCD(val)    ((val / 10) << 4) + (val % 10)
 
@@ -54,14 +59,14 @@ void PCF8563_set(Clock_t *c) {
     p[6] = WRITE_BCD(c->year % 100);//年的范围是 0 ~99，只取十位即可
 
     //数据写入
-    I2C_WriteNbyte(PCF8563_DEV_ADDR, PCF8563_REG_TD, &p, NUMBER);
+    I2C_WriteNbyte(0xA2, PCF8563_REG_TD, &p, NUMBER);
 }
 
 void PCF8563_get(Clock_t *c) {
     u8 p[NUMBER];
     u8 C = CENTURY;//世纪 0: 2000  1:2100
     //通过I2C读取RTC时钟芯片的秒数据
-    I2C_ReadNbyte(PCF8563_DEV_ADDR, PCF8563_REG_TD, &p, NUMBER);
+    I2C_ReadNbyte(0xA3, PCF8563_REG_TD, &p, NUMBER);
 
     //解析得到的数据
     c->second = ((p[0] >> 4) & 0x07) * 10 + (p[0] & 0x0F);//秒，高4位全取，低4位全取

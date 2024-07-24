@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   MAIN                                                              07/02/2024 18:17:34 PAGE 1   
+C51 COMPILER V9.60.7.0   MAIN                                                              07/24/2024 11:59:06 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
@@ -62,7 +62,7 @@ line level    source
   48   1          NVIC_UART1_Init(ENABLE,
   49   1                          Priority_1);        //中断使能, ENABLE/DISABLE; 优先级(低到高) Priority_0,Pr
              -iority_1,Priority_2,Priority_3
-C51 COMPILER V9.60.7.0   MAIN                                                              07/02/2024 18:17:34 PAGE 2   
+C51 COMPILER V9.60.7.0   MAIN                                                              07/24/2024 11:59:06 PAGE 2   
 
   50   1          UART1_SW(UART1_SW_P30_P31);        // 引脚选择, UART1_SW_P30_P31,UART1_SW_P36_P37,UART1_SW_P16_P17
              -,UART1_SW_P43_P44
@@ -125,14 +125,12 @@ line level    source
  105   2              /*循环读取RTC芯片的数据*/
  106   2              PCF8563_get(&c);
  107   2      
- 108   2              printf("Hour:%d;Minute:%d;c.second: %d\n", (int) hour, (int) minute, (int) c.second);
-C51 COMPILER V9.60.7.0   MAIN                                                              07/02/2024 18:17:34 PAGE 3   
+ 108   2              printf("Hour:%d;Minute:%d;c.second: %d\n", (int) c.hour, (int) c.minute, (int) c.second);
+C51 COMPILER V9.60.7.0   MAIN                                                              07/24/2024 11:59:06 PAGE 3   
 
-*** ERROR C202 IN LINE 108 OF main.c: 'hour': undefined identifier
  109   2              //printf("%d-%d-%d-%d-%d-%d,Week:%d\n", (int) c.year, (int) c.month, (int) c.day, (int) c.hour, (i
              -nt) c.minute,
- 110   2                     (int) c.second, (int) c.week);
-*** ERROR C141 IN LINE 110 OF main.c: syntax error near ')', expected ';'
+ 110   2      //               (int) c.second, (int) c.week);
  111   2      
  112   2              delay_ms(250);
  113   2              delay_ms(250);
@@ -143,4 +141,16 @@ line level    source
  118   1      
  119   1      }
 
-C51 COMPILATION COMPLETE.  0 WARNING(S),  2 ERROR(S)
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    271    ----
+   CONSTANT SIZE    =     66    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      24
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

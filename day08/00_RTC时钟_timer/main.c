@@ -105,9 +105,9 @@ int main() {
         /*循环读取RTC芯片的数据*/
         PCF8563_get(&c);
 
-        printf("Hour:%d;Minute:%d;c.second: %d\n", (int) hour, (int) minute, (int) c.second);
+        printf("Hour:%d;Minute:%d;c.second: %d\n", (int) c.hour, (int) c.minute, (int) c.second);
         //printf("%d-%d-%d-%d-%d-%d,Week:%d\n", (int) c.year, (int) c.month, (int) c.day, (int) c.hour, (int) c.minute,
-               (int) c.second, (int) c.week);
+//               (int) c.second, (int) c.week);
 
         delay_ms(250);
         delay_ms(250);

@@ -5,6 +5,8 @@
 #include "Switch.h"
 #include "PCF8563.h"
 
+#define READ_BCD(val) 	(val >> 4) * 10 + (val & 0x0F) 
+
 /****************  UART初始化函数 *****************/
 void UART_config(void) {
     // >>> 记得添加 NVIC.c, UART.c, UART_Isr.c <<<
@@ -41,7 +43,7 @@ int main() {
         PCF8563_get(&c);
 
         //printf("Hour:%d;Minute:%d;c.second: %d\n", (int) hour, (int) minute, (int) c.second);
-        printf("%d-%d-%d-%d-%d-%d,Week:%d\n", (int) c.year, (int) c.month, (int) c.day, (int) c.hour, (int) c.minute,
+        printf("%d-%d-%d-%d-%d-%d,Week:%d\n", (int)READ_BCD(c.year) , (int) c.month, (int) c.day, (int) c.hour, (int) c.minute,
                (int) c.second, (int) c.week);
 
         delay_ms(250);

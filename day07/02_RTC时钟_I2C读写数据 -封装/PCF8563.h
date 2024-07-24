@@ -4,7 +4,7 @@
 #include "Config.h"
 
 //设备地址
-#define PCF8563_DEV_ADDR (0x51 << 1)
+#define PCF8563_DEV_ADDR 0x51
 // 存储地址: 时间(秒)存储地址
 #define PCF8563_REG_TD 0x02
 //要读的位数,其会自动进位，即读完秒，会自动移动到秒和时的地方去获取
