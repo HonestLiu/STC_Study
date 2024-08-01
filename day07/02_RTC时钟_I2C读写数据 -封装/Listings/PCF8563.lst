@@ -1,4 +1,4 @@
-C51 COMPILER V9.60.7.0   PCF8563                                                           07/24/2024 11:57:09 PAGE 1   
+C51 COMPILER V9.60.7.0   PCF8563                                                           08/01/2024 11:32:12 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE PCF8563
@@ -59,42 +59,43 @@ line level    source
   48          void PCF8563_set(Clock_t *c) {
   49   1          u8 p[NUMBER];
   50   1          u8 C = CENTURY;//世纪 0: 2000  1:2100
-  51   1          //将十进制数据转成BCD格式数据-> 和取数据倒着来即可
-  52   1          p[0] = ((c->second / 10) << 4) + (c->second % 10);
-  53   1          p[1] = WRITE_BCD(c->minute);
-C51 COMPILER V9.60.7.0   PCF8563                                                           07/24/2024 11:57:09 PAGE 2   
+  51   1        
+  52   1          //将十进制数据转成BCD格式数据-> 和取数据倒着来即可
+  53   1          p[0] = ((c->second / 10) << 4) + (c->second % 10);
+C51 COMPILER V9.60.7.0   PCF8563                                                           08/01/2024 11:32:12 PAGE 2   
 
-  54   1          p[2] = WRITE_BCD(c->hour);
-  55   1          p[3] = c->week;
-  56   1          p[4] = WRITE_BCD(c->day);
-  57   1          C = c->year < 2100 ? 0 : 1;
-  58   1          p[5] = (C << 7) + WRITE_BCD(c->month);
-  59   1          p[6] = WRITE_BCD(c->year % 100);//年的范围是 0 ~99，只取十位即可
-  60   1      
-  61   1          //数据写入
-  62   1          I2C_WriteNbyte(0xA2, PCF8563_REG_TD, &p, NUMBER);
-  63   1      }
-  64          
-  65          void PCF8563_get(Clock_t *c) {
-  66   1          u8 p[NUMBER];
-  67   1          u8 C = CENTURY;//世纪 0: 2000  1:2100
-  68   1          //通过I2C读取RTC时钟芯片的秒数据
-  69   1          I2C_ReadNbyte(0xA3, PCF8563_REG_TD, &p, NUMBER);
-  70   1      
-  71   1          //解析得到的数据
-  72   1          c->second = ((p[0] >> 4) & 0x07) * 10 + (p[0] & 0x0F);//秒，高4位全取，低4位全取
-  73   1          c->minute = ((p[1] >> 4) & 0x07) * 10 + (p[1] & 0x0F);//分，高4位全取，低4位全取
-  74   1          c->hour = ((p[2] >> 4) & 0x03) * 10 + (p[2] & 0x0F);//时，高4位需要取两位，低4位全取
-  75   1          c->day = ((p[3] >> 4) & 0x03) * 10 + (p[3] & 0x0F);//天，高4位需要取两位，低4位全取
-  76   1          c->week = p[4] & 0x07;//周,只取低3位
-  77   1          c->month = ((p[5] >> 4) & 0x01) * 10 + (p[5] & 0x0F);//月,高4位取1位，低4位全取
-  78   1          C = p[5] >> 7;//世纪，只取最高位。 --> 0表示20xx年 1表示21xx年
-  79   1          c->year = ((p[6] >> 4) & 0x0F) * 10 + (p[6] & 0x0F);//年，全都要;  --> 其范围是0~99
-  80   1      
-  81   1          /*根据BSD获取的年的范围是0~99，需要得到我们常见的"年"，需要将BSD得到的year
+  54   1          p[1] = WRITE_BCD(c->minute);
+  55   1          p[2] = WRITE_BCD(c->hour);
+  56   1          p[3] = c->week;
+  57   1          p[4] = WRITE_BCD(c->day);
+  58   1          C = c->year < 2100 ? 0 : 1;
+  59   1          p[5] = (C << 7) + WRITE_BCD(c->month);
+  60   1          p[6] = WRITE_BCD(c->year % 100);//年的范围是 0 ~99，只取十位即可
+  61   1      
+  62   1          //数据写入
+  63   1          I2C_WriteNbyte(0xA2, PCF8563_REG_TD, &p, NUMBER);
+  64   1      }
+  65          
+  66          void PCF8563_get(Clock_t *c) {
+  67   1          u8 p[NUMBER];
+  68   1          u8 C = CENTURY;//世纪 0: 2000  1:2100
+  69   1          //通过I2C读取RTC时钟芯片的秒数据
+  70   1          I2C_ReadNbyte(0xA3, PCF8563_REG_TD, &p, NUMBER);
+  71   1      
+  72   1          //解析得到的数据
+  73   1          c->second = ((p[0] >> 4) & 0x07) * 10 + (p[0] & 0x0F);//秒，高4位全取，低4位全取
+  74   1          c->minute = ((p[1] >> 4) & 0x07) * 10 + (p[1] & 0x0F);//分，高4位全取，低4位全取
+  75   1          c->hour = ((p[2] >> 4) & 0x03) * 10 + (p[2] & 0x0F);//时，高4位需要取两位，低4位全取
+  76   1          c->day = ((p[3] >> 4) & 0x03) * 10 + (p[3] & 0x0F);//天，高4位需要取两位，低4位全取
+  77   1          c->week = p[4] & 0x07;//周,只取低3位
+  78   1          c->month = ((p[5] >> 4) & 0x01) * 10 + (p[5] & 0x0F);//月,高4位取1位，低4位全取
+  79   1          C = p[5] >> 7;//世纪，只取最高位。 --> 0表示20xx年 1表示21xx年
+  80   1          c->year = ((p[6] >> 4) & 0x0F) * 10 + (p[6] & 0x0F);//年，全都要;  --> 其范围是0~99
+  81   1      
+  82   1          /*根据BSD获取的年的范围是0~99，需要得到我们常见的"年"，需要将BSD得到的year
              -与C所对应的值相加*/
-  82   1          c->year += (C == 0 ? 2000 : 2100);
-  83   1      }
+  83   1          c->year += (C == 0 ? 2000 : 2100);
+  84   1      }
 
 
 MODULE INFORMATION:   STATIC OVERLAYABLE

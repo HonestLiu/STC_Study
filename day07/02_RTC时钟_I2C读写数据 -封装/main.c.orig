@@ -38,9 +38,6 @@ int main() {
     //进行时间设置
     PCF8563_set(&c);
 	
-		delay_ms(250);
-		delay_ms(250);
-	
 		/*2.循环读取RTC芯片的数据*/
         PCF8563_get(&c);
 

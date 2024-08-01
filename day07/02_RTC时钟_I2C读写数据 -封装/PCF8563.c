@@ -47,7 +47,8 @@ void PCF8563_init(void) {
 
 void PCF8563_set(Clock_t *c) {
     u8 p[NUMBER];
-    u8 C = CENTURY;//世纪 0: 2000  1:2100
+		u8 C = CENTURY;//世纪 0: 2000  1:2100
+	
     //将十进制数据转成BCD格式数据-> 和取数据倒着来即可
     p[0] = ((c->second / 10) << 4) + (c->second % 10);
     p[1] = WRITE_BCD(c->minute);
